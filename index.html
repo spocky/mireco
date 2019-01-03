@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -118,14 +117,14 @@ loadSettings();
     </div>
     <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)</small>
   </div>
-  <a href="#" class="material-icons more" onclick="toggleSettings();">more_vert</a>
-  <a href="#" class="material-icons power" onclick="sendEvent('power');">power_settings_new</a>
+  <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
+  <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
   <div class="remote">
     <a class="btn up" href="javascript:sendEvent('up');"></a>
     <a class="btn left" href="javascript:sendEvent('left');"></a>
     <a class="btn right" href="javascript:sendEvent('right');"></a>
     <a class="btn down" href="javascript:sendEvent('down');"></a>
-    <a class="btn enter"  href="javascript:sendEvent('enter');"></a>
+    <a class="btn enter" href="javascript:sendEvent('enter');"></a>
   </div>
   <ul class="vol">
     <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
@@ -133,9 +132,9 @@ loadSettings();
   </ul>
   <footer>
     <ul>
-      <li class="home"><a class="material-icons" href="#" onclick="sendEvent('home');">home</a></li>
-      <li class="back"><a class="material-icons" href="#" onclick="sendEvent('back');">arrow_back</a></li>
-      <li class="menu"><a class="material-icons" href="#" onclick="sendEvent('menu');">menu</a></li>
+      <li class="home"><a class="material-icons" href="javascript:sendEvent('home');">home</a></li>
+      <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
+      <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
     </ul>
   </footer>
 </body>
