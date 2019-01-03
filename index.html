@@ -1,1 +1,142 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Xiaomi GiTV Remote Control by Spocky -->
+  <Spocky http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#333" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+  :root {
+    --main-color: #fff;
+    --main-bg-color: #333;
+    --main-bg-sec-color: #222;
+    --font-size:10vw;
+    --btn-size:10vw;
+    --btn-size-neg:-10vw;
+    --arrows-size:5vw;
+    --arrows-size-neg:-5vw;
+    --li-size:16vh;
+    --vol-li-size:12vh;
+    --remote-size:60vw;
+  }
+  body {background:var(--main-bg-color);color:var(--main-color);font-weight:bold;margin:0;padding:0;display:flex;flex-direction: column;height:100vh;min-height:100vh;}
+  ul{display:flex;flex-wrap:wrap;padding-left:0;margin-top:auto;margin-bottom:0;}
+  ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;height:var(--li-size);font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
+  footer {background:var(--main-bg-sec-color);margin-top: auto;}
+  a{color:var(--main-color);text-decoration:none;font-size:var(--font-size) !important;}
+  ul.vol{width:var(--btn-size);margin:1rem auto 1rem auto;background:var(--main-bg-sec-color);padding:.5rem;border-radius:2rem}
+  ul.vol li{flex: 0 0 100%;height:var(--vol-li-size)}
+  .remote{width:var(--remote-size);height:var(--remote-size);background:var(--main-bg-sec-color);margin: auto;border-radius: 50%;position: relative;flex-shrink: 0;}
+
+  a.btn{width:0;height:0;border-style:solid;border-color:transparent;border-width:var(--arrows-size);position: absolute;margin:.5rem;}
+  a.up{border-top-width:0;border-bottom-color:var(--main-color);top: 0;left: 50%; margin-left: var(--arrows-size-neg);}
+  a.down{border-bottom-width:0;border-top-color:var(--main-color);bottom: 0;left: 50%; margin-left: var(--arrows-size-neg);}
+  a.left{border-left-width:0;border-right-color:var(--main-color);top: 50%;left: 0; margin-top: var(--arrows-size-neg);}
+  a.right{border-right-width:0;border-left-color:var(--main-color);top: 50%;right: 0; margin-top: var(--arrows-size-neg);}
+  a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;margin-top:var(--btn-size-neg);margin-left:var(--btn-size-neg);border-width:var(--btn-size);}
+  .more{position:absolute;top:3vw;right:3vw;}
+  .power{position:absolute;top:3vw;left:3vw;}
+  #settings{display:none;height:100%;width:100%;position:absolute;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;box-sizing:border-box;}
+  .validate{display:flex;justify-content:space-around;margin-top:1rem;}
+  #vib{margin-top:1rem;}
+  #vib input{vertical-align:middle;}
+  small{margin-top:3rem;font-style:italic;}
+  </style>
+  <script>
+  var deviceIP = "";
+  var enableVibrator = true;
+  function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  }
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+  function sendEvent(eventName){
+    if(deviceIP==""){
+      toggleSettings();
+      return;
+    }
+    if(enableVibrator) {
+      window.navigator.vibrate(50);
+    }
+    fetch('http://'+deviceIP+':6095/controller?action=keyevent&keycode='+eventName,{mode: 'no-cors'});
+  }
+  function toggleSettings(){
+    var settings = document.getElementById("settings");
+    var ip = document.getElementById("ip");
+    ip.value = deviceIP;
+    var vib = document.getElementById("vibrate");
+    vib.checked = enableVibrator;
+    settings.style.display=(settings.style.display=="flex"?"none":"flex");
+  }
+  function saveSettings(){
+    var ip = document.getElementById("ip");
+    setCookie("deviceIP",ip.value,365);
+    deviceIP=ip.value;
+    var vib = document.getElementById("vibrate");
+    setCookie("enableVibrator",vib.checked,365);
+    enableVibrator=vib.checked;
+    toggleSettings();
+  }
+  function loadSettings(){
+    deviceIP = getCookie("deviceIP");
+    enableVibrator = getCookie("enableVibrator");
+    if(enableVibrator==="") {
+    enableVibrator=true; // default value
+  }
+}
+loadSettings();
+</script>
+<title>Xiaomi GITV Remote Control</title>
+<body>
+  <div id="settings">
+    <label for="ip">Device IP Address</label>
+    <input id="ip" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" />
+    <label id="vib"><input id="vibrate" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
+    <div class="validate">
+      <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
+      <a href="javascript:saveSettings();" class="material-icons">check</a>
+    </div>
+    <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)</small>
+  </div>
+  <a href="#" class="material-icons more" onclick="toggleSettings();">more_vert</a>
+  <a href="#" class="material-icons power" onclick="sendEvent('power');">power_settings_new</a>
+  <div class="remote">
+    <a class="btn up" href="javascript:sendEvent('up');"></a>
+    <a class="btn left" href="javascript:sendEvent('left');"></a>
+    <a class="btn right" href="javascript:sendEvent('right');"></a>
+    <a class="btn down" href="javascript:sendEvent('down');"></a>
+    <a class="btn enter"  href="javascript:sendEvent('enter');"></a>
+  </div>
+  <ul class="vol">
+    <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
+    <li><a class="material-icons" href="javascript:sendEvent('volumedown');">volume_down</a></li>
+  </ul>
+  <footer>
+    <ul>
+      <li class="home"><a class="material-icons" href="#" onclick="sendEvent('home');">home</a></li>
+      <li class="back"><a class="material-icons" href="#" onclick="sendEvent('back');">arrow_back</a></li>
+      <li class="menu"><a class="material-icons" href="#" onclick="sendEvent('menu');">menu</a></li>
+    </ul>
+  </footer>
+</body>
+</html>
