@@ -128,7 +128,7 @@
         toggleSettings();
         return;
       }
-      if(params["enableVibrator"]) {
+      if(params["enableVibrator"] && window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50);
       }
       var destFrame = document.getElementById("destFrame");
