@@ -32,25 +32,24 @@ It probably won't work on international firmwares such as Android Tv 8.x (but if
 
 ## GiTV http API features/"documentation"
 Here are a few commands that work fine on my hardware
-* http://DEVICE_IP:6095/controller?action=getinstalledapp&count=999&changeIcon=1
-Returns a json containing the installed apps
-* http://DEVICE_IP:6095/controller?action=keyevent&keycode=%s
+* **`http://DEVICE_IP:6095/controller?action=getinstalledapp&count=999&changeIcon=1`** Returns a json containing the installed apps
+* **`http://DEVICE_IP:6095/controller?action=keyevent&keycode=%s`**
 Sends a keypress to the device.
 Put a character as keycode to send it.
 A few keywords can replace the keycode :
- * power : turns the device off
- * up/down/left/right : goes up/down/left/right
- * enter : validate/ok
- * home : returns to home screen
- * back : goes back
- * menu : opens option menu
- * volumeup : increases volume
- * volumedown : descreases volume
-* http://DEVICE_IP:6095/controller?action=startapp&type=packagename&packagename=%s
+  * **power** : turns the device off
+  * **up/down/left/right** : goes up/down/left/right
+  * **enter** : validate/ok
+  * **home** : returns to home screen
+  * **back** : goes back
+  * **menu** : opens option menu
+  * **volumeup** : increases volume
+  * **volumedown** : decreases volume
+* **`http://DEVICE_IP:6095/controller?action=startapp&type=packagename&packagename=%s`**
 Launches the 'packagename' app on the device
-* http://DEVICE_IP:6095/controller?action=changesource&source=%s
+* **`http://DEVICE_IP:6095/controller?action=changesource&source=%s`**
 Changes to source "HDMI1" or "HDMI23
-* http://DEVICE_IP:6095/general?action=getVolum
+* **`http://DEVICE_IP:6095/general?action=getVolum`**
 Returns a json containing the current volume
 
 A few other commands exists, but they are specific to chinese apps or need internal signature and are not worth reversing.
