@@ -31,7 +31,7 @@
     ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
     footer {background:var(--main-bg-sec-color);width:100%;}
     footer ul{height:var(--footer-size);}
-    a{color:var(--main-color);text-decoration:none;font-size:var(--font-size) !important;}
+    .main a{color:var(--main-color);text-decoration:none;font-size:var(--font-size);}
     .shadow{box-shadow: 0px 0px 20px 0px #000;}
     .bg2{background:var(--main-bg-sec-color);border-radius:50%;}
     .remote{width:var(--remote-size);height:var(--remote-size);border-radius: 50%;position: relative;flex-shrink: 0;box-sizing:border-box;}
@@ -45,11 +45,14 @@
     .power{position:absolute;top:3vw;left:3vw;}
     #settings{display:flex;height:100%;width:100%;position:fixed;overflow:hidden;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;transition:transform 300ms ease;will-change:transform;transform:translateX(100%);}
     #settings input[type="text"]{display:block;width:90%}
+    #settings h3{margin:0;text-align:center;}
     #deviceIP::placeholder{color:#f00;}
     .wrapper{display:flex;flex-direction:column;flex: 1 0 auto;justify-content: space-evenly;}
     .validate{display:flex;justify-content:space-around;margin-top:1rem;}
     #enableVibrator {vertical-align:middle;}
-    small{margin-top:3rem;font-style:italic;}
+    small{margin-top:1rem;font-style:italic;}
+    .sig{display:block;margin-top: .5rem;text-align: right;}
+    .sig a{font-size:inherit;text-decoration: underline}
     .buttons{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-evenly;}
     .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;width:10vmin;display:flex;flex-direction:column;}
     .cust li {display:none;}
@@ -58,7 +61,7 @@
       .buttons ul.vol{width:30%;height:auto;flex-direction:row-reverse;}
       .buttons li {height: auto;}
       .cust{margin-top:-30%;height:30vmax}
-      .wrapper{flex-direction:row;flex: 1 0 30%;flex-wrap: wrap;justify-content:flex-start}
+      .wrapper{flex-direction:row;flex: 0 0 30%;flex-wrap: wrap;justify-content:flex-start}
     }
   </style>
   <script>
@@ -180,7 +183,7 @@
     document.onreadystatechange = function(e) { init(); };
   </script>
   <title>Xiaomi GITV Remote Control</title>
-  <body>
+  <body class="main">
     <div>
       <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
       <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
@@ -206,7 +209,7 @@
         <li><a class="material-icons" id="customButton4" href="javascript:launchApp(4);">adjust</a></li>
       </ul>
     </div>
-    <footer>
+    <footer class="shadow">
       <ul>
         <li class="home"><a class="material-icons" href="javascript:sendEvent('home');">home</a></li>
         <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
@@ -214,22 +217,26 @@
       </ul>
     </footer>
     <div id="settings">
+      <h3>MiReCo Settings</h3>
       <div class="wrapper">
         <label for="deviceIP">Device IP Address<input type="text" id="deviceIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" /></label>
         <label for="customPackage1">Custom button #1<input type="text" id="customPackage1" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="bgColor">Background color<input type="text" class="jscolor {hash:true}" id="bgColor" value="" placeholder="#333" /></label>
+        <label for="btColor">Buttons color<input type="text" class="jscolor {hash:true}" id="btColor" value="" placeholder="#fff" /></label>
         <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
-        <label for="bgColor">Background color<input type="text" id="bgColor" value="" placeholder="#333" /></label>
-        <label for="btColor">Buttons color<input type="text" id="btColor" value="" placeholder="#fff" /></label>
       </div>
       <div class="validate">
         <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
         <a href="javascript:saveSettings();" class="material-icons">check</a>
       </div>
-      <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)</small>
+      <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)
+      <span class="sig"><a href="https://github.com/spocky/mireco/">MiReCo</a>, from Spocky with love <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MH5HLMP8ED24N&lc=GB&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">(buy me a drink)</a></span>
+      </small>
     </div>
     <iframe id="destFrame"></iframe>
   </body>
+  <script src="jscolor.js"></script>
   </html>
