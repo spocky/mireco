@@ -17,7 +17,7 @@ Should be compatible with anything running a web browser (provided it's quite up
 It probably won't work on international firmwares such as Android Tv 8.x (but if it does, please keep me informed)
 
 ## Usage:
-* Go http://mireco.hopto.org on your controller device (ie: smartphone)
+* Go here http://mireco.hopto.org on your controller device (ie: smartphone)
 * Just configure your device IP address and you're good to go
 * Use the settings to configure 4 custom buttons with :
  * com.example.packagename : packagename of an app actually installed on your controlled device. The button will launch it.
