@@ -19,7 +19,7 @@
     :root {
       --main-color: #fff;
       --main-bg-color: #333;
-      --main-bg-sec-color: #222;
+      --main-bg-sec-color: rgba(0,0,0,0.3);
       --font-size:10vmin;
       --font-size-neg:-5vmin;
       --footer-size:10vmax;
@@ -43,14 +43,14 @@
     a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;width:30%;height:30%;margin-top: -15%;margin-left: -15%;}
     .more{position:absolute;top:3vw;right:3vw;}
     .power{position:absolute;top:3vw;left:3vw;}
-    #settings{display:none;height:100vh;width:100%;position:absolute;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;}
+    #settings{display:flex;height:100%;width:100%;position:fixed;overflow:hidden;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;transition:transform 300ms ease;will-change:transform;transform:translateX(100%);}
     #settings input[type="text"]{display:block;width:90%}
     .wrapper{display:flex;flex-direction:column;flex: 1 0 auto;justify-content: space-evenly;}
     .validate{display:flex;justify-content:space-around;margin-top:1rem;}
     #enableVibrator {vertical-align:middle;}
     small{margin-top:3rem;font-style:italic;}
     .buttons{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-evenly;}
-    .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;display:flex;flex-direction:column;}
+    .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;width:10vmin;display:flex;flex-direction:column;}
     .cust li {display:none;}
     #destFrame{display:none;}
     @media screen and (orientation:landscape) {
@@ -67,7 +67,9 @@
      "customPackage1": "com.google.android.youtube.tv",  
      "customPackage2": "",
      "customPackage3": "com.spocky.projengmenu",
-     "customPackage4": ""
+     "customPackage4": "",
+     "bgColor": "#333",
+     "btColor": "#fff"
     };
     function setCookie(cname, cvalue, exdays) {
       var d = new Date();
@@ -139,7 +141,7 @@
           document.getElementById(key).value = params[key];
         }
       }
-      settings.style.display=(settings.style.display=="flex"?"none":"flex");
+      settings.style.transform=(settings.style.transform=="translateX(0%)"?"translateX(100%)":"translateX(0%)");
     }
     function saveSettings(){
       for(var key in params){
@@ -148,9 +150,9 @@
         } else {
           params[key] = document.getElementById(key).value;
         }
-        setCookie(key,params[key],365);
+        setCookie(key,params[key],3650);
       }
-      setButtonsVisibility();
+      updateUI();
       toggleSettings();
     }
     function loadSettings(){
@@ -160,18 +162,21 @@
         if(tmp!=null) params[key]=tmp;
       }
     }
-    function setButtonsVisibility(){
+    function updateUI(){
       var tmp;
       for(var i=1; i<5; i++){
         tmp = document.getElementById("customButton"+i);
         tmp.parentNode.style.display=(params["customPackage"+i]!=="")?"flex":"none";
       }
+      root = document.documentElement;
+      root.style.setProperty('--main-color', params["btColor"]);
+      root.style.setProperty('--main-bg-color', params["bgColor"]);
     }
     function init(){
       loadSettings();
-      setButtonsVisibility();
+      updateUI();
     }
-    window.onload = function(){ init(); };
+    document.onreadystatechange = function(e) { init(); };
   </script>
   <title>Xiaomi GITV Remote Control</title>
   <body>
@@ -215,6 +220,8 @@
         <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
+        <label for="bgColor">Background color<input type="text" id="bgColor" value="" placeholder="#333" /></label>
+        <label for="btColor">Buttons color<input type="text" id="btColor" value="" placeholder="#fff" /></label>
       </div>
       <div class="validate">
         <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
