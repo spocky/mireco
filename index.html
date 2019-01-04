@@ -21,8 +21,7 @@
       --main-bg-color: #333;
       --main-bg-sec-color: #222;
       --font-size:10vmin;
-      --arrows-size:5vmin;
-      --arrows-size-neg:-5vmin;
+      --font-size-neg:-5vmin;
       --footer-size:10vmax;
       --remote-size:60vmin;
     }
@@ -36,10 +35,10 @@
     .bg2{background:var(--main-bg-sec-color);border-radius:50%;}
     .remote{width:var(--remote-size);height:var(--remote-size);border-radius: 50%;position: relative;flex-shrink: 0;box-sizing:border-box;}
     .remote a {position:absolute;}
-    a.up{top: 0;left: 50%; margin-left: var(--arrows-size-neg);}
-    a.down{bottom: 0;left: 50%; margin-left: var(--arrows-size-neg);}
-    a.left{top: 50%;left: 0; margin-top: var(--arrows-size-neg);}
-    a.right{top: 50%;right: 0; margin-top: var(--arrows-size-neg);}
+    a.up{top: 0;left: 50%; margin-left: var(--font-size-neg);}
+    a.down{bottom: 0;left: 50%; margin-left: var(--font-size-neg);}
+    a.left{top: 50%;left: 0; margin-top: var(--font-size-neg);}
+    a.right{top: 50%;right: 0; margin-top: var(--font-size-neg);}
     a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;width:30%;height:30%;margin-top: -15%;margin-left: -15%;}
     .more{position:absolute;top:3vw;right:3vw;}
     .power{position:absolute;top:3vw;left:3vw;}
@@ -174,7 +173,7 @@
     }
     window.onload = function(){ init(); };
   </script>
-  <title>MiReCo, the Xiaomi GITV Remote Control</title>
+  <title>Xiaomi GITV Remote Control</title>
   <body>
     <div>
       <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
