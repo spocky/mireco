@@ -9,133 +9,213 @@
   <meta name="theme-color" content="#333" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <style>
-  :root {
-    --main-color: #fff;
-    --main-bg-color: #333;
-    --main-bg-sec-color: #222;
-    --font-size:10vw;
-    --btn-size:10vw;
-    --btn-size-neg:-10vw;
-    --arrows-size:5vw;
-    --arrows-size-neg:-5vw;
-    --li-size:16vh;
-    --vol-li-size:12vh;
-    --remote-size:60vw;
-  }
-  body {background:var(--main-bg-color);color:var(--main-color);font-weight:bold;margin:0;padding:0;display:flex;flex-direction: column;height:100vh;min-height:100vh;}
-  ul{display:flex;flex-wrap:wrap;padding-left:0;margin-top:auto;margin-bottom:0;}
-  ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;height:var(--li-size);font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
-  footer {background:var(--main-bg-sec-color);margin-top: auto;}
-  a{color:var(--main-color);text-decoration:none;font-size:var(--font-size) !important;}
-  ul.vol{width:var(--btn-size);margin:1rem auto 1rem auto;background:var(--main-bg-sec-color);padding:.5rem;border-radius:2rem}
-  ul.vol li{flex: 0 0 100%;height:var(--vol-li-size)}
-  .remote{width:var(--remote-size);height:var(--remote-size);background:var(--main-bg-sec-color);margin: auto;border-radius: 50%;position: relative;flex-shrink: 0;}
-
-  a.btn{width:0;height:0;border-style:solid;border-color:transparent;border-width:var(--arrows-size);position: absolute;margin:.5rem;}
-  a.up{border-top-width:0;border-bottom-color:var(--main-color);top: 0;left: 50%; margin-left: var(--arrows-size-neg);}
-  a.down{border-bottom-width:0;border-top-color:var(--main-color);bottom: 0;left: 50%; margin-left: var(--arrows-size-neg);}
-  a.left{border-left-width:0;border-right-color:var(--main-color);top: 50%;left: 0; margin-top: var(--arrows-size-neg);}
-  a.right{border-right-width:0;border-left-color:var(--main-color);top: 50%;right: 0; margin-top: var(--arrows-size-neg);}
-  a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;margin-top:var(--btn-size-neg);margin-left:var(--btn-size-neg);border-width:var(--btn-size);}
-  .more{position:absolute;top:3vw;right:3vw;}
-  .power{position:absolute;top:3vw;left:3vw;}
-  #settings{display:none;height:100vh;width:100%;position:absolute;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;box-sizing:border-box;}
-  .validate{display:flex;justify-content:space-around;margin-top:1rem;}
-  #vib{margin-top:1rem;}
-  #vib input{vertical-align:middle;}
-  small{margin-top:3rem;font-style:italic;}
+    :root {
+      --main-color: #fff;
+      --main-bg-color: #333;
+      --main-bg-sec-color: #222;
+      --font-size:10vmin;
+      --arrows-size:5vmin;
+      --arrows-size-neg:-5vmin;
+      --footer-size:10vmax;
+      --remote-size:60vmin;
+    }
+    body {background:var(--main-bg-color);color:var(--main-color);font-weight:bold;margin:0;padding:0;display:flex;flex-direction: column;height:100vh;min-height:100vh;align-items:center;justify-content: space-between;}
+    ul{display:flex;flex-wrap:wrap;padding-left:0;margin:0}
+    ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
+    footer {background:var(--main-bg-sec-color);width:100%;}
+    footer ul{height:var(--footer-size);}
+    a{color:var(--main-color);text-decoration:none;font-size:var(--font-size) !important;}
+    .shadow{box-shadow: 0px 0px 20px 0px #000;}
+    .bg2{background:var(--main-bg-sec-color);border-radius:50%;}
+    .remote{width:var(--remote-size);height:var(--remote-size);border-radius: 50%;position: relative;flex-shrink: 0;box-sizing:border-box;}
+    .remote a {position:absolute;}
+    a.up{top: 0;left: 50%; margin-left: var(--arrows-size-neg);}
+    a.down{bottom: 0;left: 50%; margin-left: var(--arrows-size-neg);}
+    a.left{top: 50%;left: 0; margin-top: var(--arrows-size-neg);}
+    a.right{top: 50%;right: 0; margin-top: var(--arrows-size-neg);}
+    a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;width:30%;height:30%;margin-top: -15%;margin-left: -15%;}
+    .more{position:absolute;top:3vw;right:3vw;}
+    .power{position:absolute;top:3vw;left:3vw;}
+    #settings{display:none;height:100vh;width:100%;position:absolute;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;}
+    #settings input[type="text"]{display:block;width:90%}
+    .wrapper{display:flex;flex-direction:column;flex: 1 0 auto;justify-content: space-evenly;}
+    .validate{display:flex;justify-content:space-around;margin-top:1rem;}
+    #enableVibrator {vertical-align:middle;}
+    small{margin-top:3rem;font-style:italic;}
+    .buttons{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-evenly;}
+    .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;display:flex;flex-direction:column;}
+    .cust li {display:none;}
+    #destFrame{display:none;}
+    @media screen and (orientation:landscape) {
+      .buttons ul.vol{width:30%;height:auto;flex-direction:row-reverse;}
+      .buttons li {height: auto;}
+      .cust{margin-top:-30%;height:30vmax}
+      .wrapper{flex-direction:row;flex: 1 0 30%;flex-wrap: wrap;justify-content:flex-start}
+    }
   </style>
   <script>
-  var deviceIP = "";
-  var enableVibrator = true;
-  function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+ d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-  }
-  function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
+    var params = { 
+     "deviceIP" : "",
+     "enableVibrator" : true, 
+     "customPackage1": "com.google.android.youtube.tv",  
+     "customPackage2": "",
+     "customPackage3": "com.spocky.projengmenu",
+     "customPackage4": ""
+    };
+    function setCookie(cname, cvalue, exdays) {
+      var d = new Date();
+      d.setTime(d.getTime() + (exdays*24*60*60*1000));
+      var expires = "expires="+ d.toUTCString();
+      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     }
-    return "";
-  }
-  function sendEvent(eventName){
-    if(deviceIP==""){
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          c = c.substring(name.length, c.length);
+          switch(c.toLowerCase()){
+            case "true":
+              return true;
+            case "false":
+              return false;
+            default:
+              return c;
+          }
+        }
+      }
+      return null;
+    }
+    function sendEvent(eventName){
+      execCommand('keyevent&keycode='+eventName);
+    }
+    function launchApp(customButton){
+      var app = params["customPackage" + customButton];
+      if(app=="") {
+        return;
+      }
+        switch(app.toLowerCase()){
+          case "hdmi1":
+          case "hdmi2":
+          case "hdmi3": // hdmi3 doesn't work at least on 1.3.97 and before
+            execCommand('changesource&source='+app.toLowerCase());
+          break;
+          default:
+            execCommand('startapp&type=packagename&packagename='+app);
+          break;
+        }
+    }
+    function execCommand(action){
+      if(params["deviceIP"]==""){
+        toggleSettings();
+        return;
+      }
+      if(params["enableVibrator"]) {
+        window.navigator.vibrate(50);
+      }
+      var destFrame = document.getElementById("destFrame");
+      destFrame.src='http://'+params["deviceIP"]+':6095/controller?action='+action;
+    }
+    function toggleSettings(){
+      var tmp;
+      var settings = document.getElementById("settings");
+
+      for(var key in params){
+        console.log(key);
+        if(typeof params[key] === "boolean") {
+          document.getElementById(key).checked = params[key];
+        } else {
+          document.getElementById(key).value = params[key];
+        }
+      }
+      settings.style.display=(settings.style.display=="flex"?"none":"flex");
+    }
+    function saveSettings(){
+      for(var key in params){
+        if(typeof params[key] === "boolean") {
+          params[key] = document.getElementById(key).checked;
+        } else {
+          params[key] = document.getElementById(key).value;
+        }
+        setCookie(key,params[key],365);
+      }
+      setButtonsVisibility();
       toggleSettings();
-      return;
     }
-    if(enableVibrator) {
-      window.navigator.vibrate(50);
+    function loadSettings(){
+      var tmp;
+      for(var key in params){
+        tmp = getCookie(key);
+        if(tmp!=null) params[key]=tmp;
+      }
     }
-    fetch('http://'+deviceIP+':6095/controller?action=keyevent&keycode='+eventName,{mode: 'no-cors'});
-  }
-  function toggleSettings(){
-    var settings = document.getElementById("settings");
-    var ip = document.getElementById("ip");
-    ip.value = deviceIP;
-    var vib = document.getElementById("vibrate");
-    vib.checked = enableVibrator;
-    settings.style.display=(settings.style.display=="flex"?"none":"flex");
-  }
-  function saveSettings(){
-    var ip = document.getElementById("ip");
-    setCookie("deviceIP",ip.value,365);
-    deviceIP=ip.value;
-    var vib = document.getElementById("vibrate");
-    setCookie("enableVibrator",vib.checked,365);
-    enableVibrator=vib.checked;
-    toggleSettings();
-  }
-  function loadSettings(){
-    deviceIP = getCookie("deviceIP");
-    enableVibrator = getCookie("enableVibrator");
-    if(enableVibrator==="") {
-    enableVibrator=true; // default value
-  }
-}
-loadSettings();
-</script>
-<title>Xiaomi GITV Remote Control</title>
-<body>
-  <div id="settings">
-    <label for="ip">Device IP Address</label>
-    <input id="ip" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" />
-    <label id="vib"><input id="vibrate" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
-    <div class="validate">
-      <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
-      <a href="javascript:saveSettings();" class="material-icons">check</a>
+    function setButtonsVisibility(){
+      var tmp;
+      for(var i=1; i<5; i++){
+        tmp = document.getElementById("customButton"+i);
+        tmp.parentNode.style.display=(params["customPackage"+i]!=="")?"flex":"none";
+      }
+    }
+    function init(){
+      loadSettings();
+      setButtonsVisibility();
+    }
+    window.onload = function(){ init(); };
+  </script>
+  <title>Xiaomi GITV Remote Control</title>
+  <body>
+    <div>
+      <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
+      <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
     </div>
-    <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)</small>
-  </div>
-  <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
-  <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
-  <div class="remote">
-    <a class="btn up" href="javascript:sendEvent('up');"></a>
-    <a class="btn left" href="javascript:sendEvent('left');"></a>
-    <a class="btn right" href="javascript:sendEvent('right');"></a>
-    <a class="btn down" href="javascript:sendEvent('down');"></a>
-    <a class="btn enter" href="javascript:sendEvent('enter');"></a>
-  </div>
-  <ul class="vol">
-    <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
-    <li><a class="material-icons" href="javascript:sendEvent('volumedown');">volume_down</a></li>
-  </ul>
-  <footer>
-    <ul>
-      <li class="home"><a class="material-icons" href="javascript:sendEvent('home');">home</a></li>
-      <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
-      <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
-    </ul>
-  </footer>
-</body>
-</html>
+    <div class="remote bg2 shadow">
+      <a class="material-icons up" href="javascript:sendEvent('up');">arrow_drop_up</a>
+      <a class="material-icons left" href="javascript:sendEvent('left');">arrow_left</a>
+      <a class="material-icons right" href="javascript:sendEvent('right');">arrow_right</a>
+      <a class="material-icons down" href="javascript:sendEvent('down');">arrow_drop_down</a>
+      <a class="enter" href="javascript:sendEvent('enter');"></a>
+    </div>
+    <div class="buttons">
+      <ul class="cust">
+        <li><a class="material-icons" id="customButton1" href="javascript:launchApp(1);">adjust</a></li>
+        <li><a class="material-icons" id="customButton2" href="javascript:launchApp(2);">adjust</a></li>
+      </ul>
+      <ul class="vol bg2 shadow">
+        <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
+        <li><a class="material-icons" href="javascript:sendEvent('volumedown');">volume_down</a></li>
+      </ul>
+      <ul class="cust">
+        <li><a class="material-icons" id="customButton3" href="javascript:launchApp(3);">adjust</a></li>
+        <li><a class="material-icons" id="customButton4" href="javascript:launchApp(4);">adjust</a></li>
+      </ul>
+    </div>
+    <footer>
+      <ul>
+        <li class="home"><a class="material-icons" href="javascript:sendEvent('home');">home</a></li>
+        <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
+        <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
+      </ul>
+    </footer>
+    <div id="settings">
+      <div class="wrapper">
+        <label for="deviceIP">Device IP Address<input type="text" id="deviceIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" /></label>
+        <label for="customPackage1">Custom button #1<input type="text" id="customPackage1" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
+      </div>
+      <div class="validate">
+        <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
+        <a href="javascript:saveSettings();" class="material-icons">check</a>
+      </div>
+      <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)</small>
+    </div>
+    <iframe id="destFrame"></iframe>
+  </body>
+  </html>
