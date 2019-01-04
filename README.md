@@ -48,7 +48,7 @@ A few keywords can replace the keycode :
 * **`http://DEVICE_IP:6095/controller?action=startapp&type=packagename&packagename=%s`**
 Launches the 'packagename' app on the device
 * **`http://DEVICE_IP:6095/controller?action=changesource&source=%s`**
-Changes to source "HDMI1" or "HDMI23
+Changes to source "HDMI1" or "HDMI2"
 * **`http://DEVICE_IP:6095/general?action=getVolum`**
 Returns a json containing the current volume
 
