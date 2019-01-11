@@ -28,7 +28,7 @@ It probably won't work on international firmwares such as Android Tv 8.x (but if
 * As explained above, shortcuts won't work to change to HDMI3 (at least it doesn't work on GiTV 1.3.97, hopefully it'll be fixed by Xiaomi)
 * "Vibrate on touch" setting won't work on iOs (until Apple adds support)
 * Power button will only work to power off. Powering On by HTML isn't supported. On my hardware (Mi Laser Projector), wake on lan doesn't work either. For now, I haven't been able to find out how official Mi Remote app wakes the device up (it might be using mDNS, but it's not discovered by standard Bonjour apps). Please contact me if you know how it works.
-* Please note the due to the html mixed content restriction, this page needs to be hosted on an HTTP (not HTTPS) server. This is actually the case on http://mireco.hopto.org. But if you want to host it elsewhere, keep that in mind.
+* Please note that due to the html mixed content restriction, this page needs to be hosted on an HTTP (not HTTPS) server. This is actually the case on http://mireco.hopto.org. But if you want to host it elsewhere, keep that in mind.
 
 ## GiTV http API features/"documentation"
 Here are a few commands that work fine on my hardware
