@@ -156,7 +156,7 @@
         }
         setCookie(key,params[key],3650);
       }
-      updateUI();
+	  updateUI();
       toggleSettings();
     }
     function loadSettings(){
@@ -176,7 +176,15 @@
       root.style.setProperty('--main-color', params["btColor"]);
       root.style.setProperty('--main-bg-color', params["bgColor"]);
     }
+	function checkHash(){
+      ip = window.location.hash;
+      if(ip && ip.length>1){
+		setCookie("deviceIP",ip.substring(1),3650);
+	    window.location.hash='';
+      }
+	}
     function init(){
+	  checkHash();
       loadSettings();
       updateUI();
     }
