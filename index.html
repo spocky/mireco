@@ -188,7 +188,7 @@
       loadSettings();
       updateUI();
     }
-    document.onreadystatechange = function(e) { init(); };
+    document.onreadystatechange = function(e) { if (document.readyState === 'interactive') init(); };
   </script>
   <title>Xiaomi GITV Remote Control</title>
   <body class="main">
