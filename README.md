@@ -16,6 +16,11 @@ Should be compatible with anything running a web browser (provided it's quite up
 
 It probably won't work on international firmwares such as Android Tv 8.x (but if it does, please keep me informed)
 
+Depending on your device, you'll need to have one the the 2 services enabled for it to work (enabled by default) :
+- com.duokan.airkan.tvbox (AirkanTvService)
+- com.xiaomi.mitv.remotecontroller.service (RemoteControllerService)
+So if you have disabled "bloatware" (using "pm uninstall ...." for example), please make sure these services are still installed/enabled.
+
 ## Usage:
 * Go here http://mireco.hopto.org on your controller device (ie: smartphone)
 * Just configure your device IP address and you're good to go
