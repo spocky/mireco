@@ -72,6 +72,7 @@
      "customPackage2": "",
      "customPackage3": "com.spocky.projengmenu",
      "customPackage4": "",
+     "customLauncher": "",
      "bgColor": "#333",
      "btColor": "#fff"
     };
@@ -166,6 +167,13 @@
         if(tmp!=null) params[key]=tmp;
       }
     }
+	function home(){
+	  var app = params["customLauncher"];
+      if(app=="") {
+        return sendEvent('home');
+      }
+	  execCommand('startapp&type=packagename&packagename='+app);
+	}
     function updateUI(){
       var tmp;
       for(var i=1; i<5; i++){
@@ -219,7 +227,7 @@
     </div>
     <footer class="shadow">
       <ul>
-        <li class="home"><a class="material-icons" href="javascript:sendEvent('home');">home</a></li>
+        <li class="home"><a class="material-icons" href="javascript:home();">home</a></li>
         <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
         <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
       </ul>
@@ -232,6 +240,7 @@
         <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
         <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
+        <label for="customLauncher">Home button custom launcher<input type="text" id="customLauncher" value="" placeholder="com.example.packagename" /></label>
         <label for="bgColor">Background color<input type="text" class="jscolor {hash:true}" id="bgColor" value="" placeholder="#333" /></label>
         <label for="btColor">Buttons color<input type="text" class="jscolor {hash:true}" id="btColor" value="" placeholder="#fff" /></label>
         <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>

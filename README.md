@@ -24,9 +24,12 @@ So if you have disabled "bloatware" (using "pm uninstall ...." for example), ple
 ## Usage:
 * Go here http://mireco.hopto.org on your controller device (ie: smartphone)
 * Just configure your device IP address and you're good to go
-* Use the settings to configure 4 custom buttons with :
- * com.example.packagename : packagename of an app actually installed on your controlled device. The button will launch it.
- * HDMI1/HDMI2 : change source to HDMI1 / HDMI2 (please note that as of GiTV 1.3.97, HDMI3 is not supported by the GiTV server, thus it won't work until Xiaomi fixes it).
+* Use the settings to configure :
+ * 4 custom buttons with :
+  * com.example.packagename : packagename of an app actually installed on your controlled device. The button will launch it.
+  * HDMI1/HDMI2 : change source to HDMI1 / HDMI2 (please note that as of GiTV 1.3.97, HDMI3 is not supported by the GiTV server, thus it won't work until Xiaomi fixes it).
+ * custom package for home button (if you installed a custom launcher but didn't disable the stock one, which is still bound to the home button)
+ * background and buttons colors
 * This app is compatible with webapp standard, so adding a shortcut from your smartphone browser to your launcher will use a special icon and remove the unneeded address bar. For example, on Chrome, with [this page](http://mireco.hopto.org) open, just go to the settings and select "add to homescreen".
 
 ## Known issues:
