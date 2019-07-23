@@ -2,7 +2,7 @@
 Xiaomi GiTV Remote Control
 
 ## Description
-This is a simple web based remote control for GiTV (Xiaomi with chinese interface) based android devices :
+This is a simple web based remote control for MIUI TV (Xiaomi with chinese interface) based android devices :
 - Mi Box
 - Mi Tv
 - Mi Projectors
