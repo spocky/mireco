@@ -39,15 +39,31 @@ The original MiReCo had to be served over plain HTTP (`http://mireco.hopto.org`)
   * "Test connection" can only tell you that *something answered* on port 6095. The TV's responses can't be read by the page (no CORS), so MiReCo never claims a command was executed — check the TV screen.
   * You can also pass the IP in the URL once: `https://…/mireco/#192.168.1.20`.
 * Use the settings to configure :
- * 4 custom buttons with :
-  * com.example.packagename : packagename of an app actually installed on your controlled device. The button will launch it.
-  * HDMI1/HDMI2 : change source to HDMI1 / HDMI2 (please note that as of GiTV 1.3.97, HDMI3 is not supported by the GiTV server, thus it won't work until Xiaomi fixes it).
- * custom package for home button (if you installed a custom launcher but didn't disable the stock one, which is still bound to the home button)
+ * 4 shortcut buttons (see [Shortcut buttons](#shortcut-buttons)), each launching an app or switching to an HDMI input (please note that as of GiTV 1.3.97, HDMI3 is not supported by the GiTV server, thus it won't work until Xiaomi fixes it).
+ * the home button: TV home screen, or a launcher app (if you installed a custom launcher but didn't disable the stock one, which is still bound to the home button)
  * a theme (see below), and background and buttons colors for the Classic theme
  * vibrate on touch
  * typing options: delay between keys, experimental non-ASCII characters
 * Settings are stored in the browser's `localStorage` (they used to be cookies, which on GitHub Pages would be sent to github.io and shared with other `USER.github.io` sites; old cookies are migrated automatically).
 * This app is compatible with webapp standard, so adding it to your home screen from the browser menu gives it its own icon and removes the address bar.
+
+### Shortcut buttons
+Settings → *Shortcut buttons* shows the four buttons where they sit on the remote (two left and two right of the volume keys). Tap one to open the app picker:
+
+* **Popular apps**: YouTube, YouTube Kids, YouTube Music, SmartTube, Netflix, Prime Video, Disney+, Max, Apple TV, Paramount+, Crunchyroll, DAZN, Pluto TV, Twitch, Plex, Kodi, VLC, Spotify, Play Store and two launchers. Each one comes with its own colored icon and its usual Android TV package name. The search box filters by app or package name.
+* **TV inputs**: HDMI 1–3.
+* **Other app**: type any package name, for example from the app's Play Store address (`id=…`), and choose an icon: automatic, one of eight generic icons (apps, movies, live TV, music, games, web, favorite, settings), or up to three letters.
+* **Remove button** hides the button on the remote.
+
+*Home button* works the same way, with a choice of the TV home screen, a known launcher (Projectivy, FLauncher) or any other package.
+
+App icons are simple colored tiles drawn for MiReCo, not official logos. Package names can differ between regions and firmware builds; if a button doesn't open the app, enter its package under *Other app*.
+
+The settings screen keeps your edits in a draft: **Save** stores them, **Cancel** (or ✕, or Escape on a keyboard) discards them, and an *Unsaved* chip shows when something changed.
+
+![The shortcut buttons section of Settings in each theme](docs/screenshots/settings-buttons.png)
+
+![The app picker for a shortcut button in each theme](docs/screenshots/app-picker.png)
 
 ### Themes
 Pick one in Settings → Appearance; tapping a theme previews it immediately, Cancel restores the saved one.
@@ -186,8 +202,10 @@ Code layout (native ES modules, no framework):
 | `js/text-sender.js` | Committed text → queued commands |
 | `js/keyboard-panel.js` | Keyboard sheet UI |
 | `js/settings.js` | Settings (localStorage, cookie migration) |
+| `js/settings-panel.js` | Settings screen: draft/save/cancel, shortcut slots, app picker |
+| `js/apps.js`, `js/app-icons.js` | App/HDMI catalog, icon choices, icon rendering |
 | `js/themes.js`, `js/theme-boot.js` | Theme list/application; pre-paint theme loader |
-| `js/app.js` | Remote buttons, settings overlay, wiring |
+| `js/app.js` | Remote buttons, status messages, wiring |
 | `scripts/` | Preview server, certificate helper, mock device, syntax check |
 
 Hardware-dependent behaviour is listed in [docs/manual-testing.md](docs/manual-testing.md).

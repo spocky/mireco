@@ -20,8 +20,10 @@ TV model and GiTV version.
 
 ## 2. Remote functions (regression)
 - [ ] Power (off), up/down/left/right, OK, home, back, menu, volume up/down.
-- [ ] Custom buttons 1–4 with an app package and with `HDMI1`/`HDMI2`.
-- [ ] Home with a custom launcher package configured.
+- [ ] Shortcut buttons 1–4: pick several catalog apps (check each opens on your TV and note any package that differs on your firmware), `HDMI 1`/`HDMI 2`, and an "Other app" package with a generic icon and with letters.
+- [ ] Remove a shortcut button: it disappears from the remote; Cancel restores it.
+- [ ] Home button: TV home screen, a catalog launcher, and a custom launcher package.
+- [ ] Settings: the *Unsaved* chip appears after a change; Cancel/✕ discard; Save persists after reload.
 - [ ] Colors (background/buttons) apply and persist after reload; vibration on/off.
 - [ ] Settings from the original cookie-based version are migrated (open the old site's origin if applicable).
 - [ ] `…/#192.168.1.20` sets the device IP once and the hash disappears.
