@@ -1,6 +1,6 @@
 /* =========================================================================
-   Design tokens
-   Every visual decision below reads these tokens.
+   Themes
+   Every visual decision below reads these tokens; each theme only sets them.
    ========================================================================= */
 
 :root {
@@ -26,8 +26,9 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* The MiReCo look, driven by the two custom colors. */
-:root {
+/* Classic: the original MiReCo look, driven by the two custom colors. */
+:root,
+:root[data-theme="classic"] {
   color-scheme: dark;
   --bg: var(--main-bg-color);
   --bg-image: radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--main-color) 7%, transparent), transparent 60%);
@@ -88,6 +89,210 @@
   --input-fg: #fff;
   --input-border: rgba(255, 255, 255, 0.2);
   --overlay-accent: #fff;
+}
+
+/* Ember: Xiaomi orange on graphite, HyperOS-like squircles and a floating dock. */
+:root[data-theme="ember"] {
+  color-scheme: dark;
+  --bg: #0e0e10;
+  --bg-image:
+    radial-gradient(90% 50% at 50% -8%, rgba(255, 105, 0, 0.2), transparent 65%),
+    linear-gradient(180deg, #151517 0%, #0b0b0c 100%);
+  --fg: #f5f5f7;
+  --muted: rgba(245, 245, 247, 0.6);
+  --hover: rgba(255, 255, 255, 0.06);
+  --pressed: rgba(255, 105, 0, 0.18);
+  --focus: #ff8a3d;
+
+  --top-icon: 24px;
+  --power: #ff6b5e;
+  --power-bg: rgba(255, 90, 79, 0.12);
+
+  --ring-bg: radial-gradient(circle at 50% 28%, #2b2b2f 0%, #1b1b1e 68%);
+  --ring-border: rgba(255, 255, 255, 0.06);
+  --ring-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --ring-inner: rgba(255, 255, 255, 0.04);
+  --arrow: #f5f5f7;
+  --arrow-size: clamp(28px, 9vmin, 48px);
+  --ok-bg: linear-gradient(145deg, #ff8f45 0%, #ff6900 55%, #f05a00 100%);
+  --ok-fg: #fff;
+  --ok-border: rgba(255, 255, 255, 0.18);
+  --ok-shadow: 0 10px 28px -6px rgba(255, 105, 0, 0.55);
+  --ok-label: block;
+
+  --tile-bg: #1e1e21;
+  --tile-border: rgba(255, 255, 255, 0.06);
+  --tile-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.8);
+  --tile-radius: 32%;
+  --tile-size: clamp(54px, 15vmin, 68px);
+  --tile-icon: clamp(24px, 7vmin, 30px);
+  --rocker-bg: #1e1e21;
+  --rocker-border: rgba(255, 255, 255, 0.06);
+  --rocker-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.9);
+
+  --dock-bg: rgba(30, 30, 33, 0.82);
+  --dock-border: rgba(255, 255, 255, 0.07);
+  --dock-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.9);
+  --dock-radius: 28px;
+  --dock-margin: 14px;
+  --dock-safe-margin: var(--safe-bottom);
+  --dock-safe-pad: 0px;
+  --dock-icon: 28px;
+  --blur: blur(18px) saturate(140%);
+
+  --accent: #ff6900;
+  --on-accent: #fff;
+  --chip-bg: #232326;
+  --sheet-bg: rgba(24, 24, 27, 0.94);
+  --sheet-border: rgba(255, 255, 255, 0.07);
+  --field-bg: #111113;
+  --field-border: rgba(255, 255, 255, 0.1);
+
+  --overlay-bg: rgba(10, 10, 12, 0.97);
+  --overlay-fg: #f5f5f7;
+  --overlay-muted: rgba(245, 245, 247, 0.6);
+  --overlay-card: #18181b;
+  --overlay-border: rgba(255, 255, 255, 0.07);
+  --input-bg: #0e0e10;
+  --input-fg: #f5f5f7;
+  --input-border: rgba(255, 255, 255, 0.1);
+  --overlay-accent: #ff6900;
+}
+
+/* Leanback: Android TV / Google TV — calm slate surfaces, Material 3 tones, round keys. */
+:root[data-theme="leanback"] {
+  color-scheme: dark;
+  --font: Roboto, "Google Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: #1b1c1f;
+  --bg-image: linear-gradient(180deg, #24262b 0%, #18191c 100%);
+  --fg: #e3e3e3;
+  --muted: #9aa0a6;
+  --hover: rgba(232, 234, 237, 0.08);
+  --pressed: rgba(168, 199, 250, 0.18);
+  --focus: #a8c7fa;
+
+  --top-icon: 24px;
+  --power: #f28b82;
+  --power-bg: rgba(242, 139, 130, 0.12);
+
+  --ring-bg: #2d2f33;
+  --ring-border: #3c4043;
+  --ring-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+  --ring-inner: #3c4043;
+  --arrow: #e8eaed;
+  --arrow-size: clamp(28px, 9vmin, 48px);
+  --ok-bg: #a8c7fa;
+  --ok-fg: #062e6f;
+  --ok-border: transparent;
+  --ok-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+  --ok-label: block;
+
+  --tile-bg: #2d2f33;
+  --tile-border: transparent;
+  --tile-shadow: none;
+  --tile-radius: 50%;
+  --tile-size: clamp(54px, 15vmin, 66px);
+  --tile-icon: clamp(24px, 7vmin, 30px);
+  --rocker-bg: #2d2f33;
+  --rocker-border: transparent;
+  --rocker-shadow: none;
+
+  --dock-bg: #202124;
+  --dock-border: #2d2f33;
+  --dock-shadow: none;
+  --dock-radius: 0;
+  --dock-margin: 0px;
+  --dock-icon: 26px;
+  --blur: none;
+
+  --accent: #a8c7fa;
+  --on-accent: #062e6f;
+  --chip-bg: #3c4043;
+  --sheet-bg: #28292c;
+  --sheet-border: #3c4043;
+  --field-bg: #1f1f1f;
+  --field-border: #5f6368;
+
+  --overlay-bg: #1b1c1f;
+  --overlay-fg: #e3e3e3;
+  --overlay-muted: #9aa0a6;
+  --overlay-card: #232427;
+  --overlay-border: #3c4043;
+  --input-bg: #1f1f1f;
+  --input-fg: #e3e3e3;
+  --input-border: #5f6368;
+  --overlay-accent: #a8c7fa;
+}
+
+/* Frost: light frosted glass with soft depth, like a white Mi remote. */
+:root[data-theme="frost"] {
+  color-scheme: light;
+  --danger: #d93025;
+  --warn: #b06000;
+  --ok: #188038;
+  --bg: #eef0f4;
+  --bg-image:
+    radial-gradient(80% 45% at 50% -5%, #ffffff 0%, transparent 70%),
+    linear-gradient(180deg, #f4f5f8 0%, #e5e7ec 100%);
+  --fg: #1c1c1e;
+  --muted: rgba(28, 28, 30, 0.58);
+  --hover: rgba(0, 0, 0, 0.04);
+  --pressed: rgba(255, 105, 0, 0.14);
+  --focus: #ff6900;
+
+  --top-icon: 24px;
+  --power: #e5484d;
+  --power-bg: rgba(229, 72, 77, 0.1);
+
+  --ring-bg: linear-gradient(160deg, #ffffff 0%, #eceef2 100%);
+  --ring-border: rgba(255, 255, 255, 0.9);
+  --ring-shadow: 14px 14px 32px rgba(160, 168, 184, 0.45), -12px -12px 28px rgba(255, 255, 255, 0.95);
+  --ring-inner: rgba(0, 0, 0, 0.05);
+  --arrow: #3a3a3c;
+  --arrow-size: clamp(28px, 9vmin, 48px);
+  --ok-bg: linear-gradient(150deg, #2c2c2e 0%, #121214 100%);
+  --ok-fg: #fff;
+  --ok-border: transparent;
+  --ok-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.45);
+  --ok-label: block;
+
+  --tile-bg: rgba(255, 255, 255, 0.9);
+  --tile-border: rgba(255, 255, 255, 0.95);
+  --tile-shadow: 6px 6px 16px rgba(160, 168, 184, 0.35), -6px -6px 14px rgba(255, 255, 255, 0.9);
+  --tile-radius: 32%;
+  --tile-size: clamp(54px, 15vmin, 68px);
+  --tile-icon: clamp(24px, 7vmin, 30px);
+  --rocker-bg: rgba(255, 255, 255, 0.9);
+  --rocker-border: rgba(255, 255, 255, 0.95);
+  --rocker-shadow: 8px 8px 20px rgba(160, 168, 184, 0.4), -8px -8px 18px rgba(255, 255, 255, 0.9);
+
+  --dock-bg: rgba(255, 255, 255, 0.72);
+  --dock-border: rgba(255, 255, 255, 0.9);
+  --dock-shadow: 0 14px 36px -14px rgba(120, 128, 145, 0.55);
+  --dock-radius: 28px;
+  --dock-margin: 14px;
+  --dock-safe-margin: var(--safe-bottom);
+  --dock-safe-pad: 0px;
+  --dock-icon: 28px;
+  --blur: blur(20px) saturate(160%);
+
+  --accent: #1c1c1e;
+  --on-accent: #fff;
+  --chip-bg: rgba(255, 255, 255, 0.92);
+  --sheet-bg: rgba(250, 250, 252, 0.94);
+  --sheet-border: rgba(255, 255, 255, 0.95);
+  --field-bg: #fff;
+  --field-border: rgba(0, 0, 0, 0.12);
+
+  --overlay-bg: rgba(242, 243, 246, 0.97);
+  --overlay-fg: #1c1c1e;
+  --overlay-muted: rgba(28, 28, 30, 0.6);
+  --overlay-card: #fff;
+  --overlay-border: rgba(0, 0, 0, 0.06);
+  --input-bg: #f5f6f8;
+  --input-fg: #1c1c1e;
+  --input-border: rgba(0, 0, 0, 0.1);
+  --overlay-accent: #ff6900;
 }
 
 /* =========================================================================
@@ -518,9 +723,90 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
   border-top: 1px solid var(--overlay-border);
 }
 .validate .icon-btn { color: var(--overlay-fg); font-size: 36px; }
+.validate #settingsSave { background: var(--overlay-accent); color: #fff; }
+:root[data-theme="classic"] .validate #settingsSave { background: transparent; color: var(--overlay-fg); }
+:root[data-theme="leanback"] .validate #settingsSave { color: #062e6f; }
 small { display: block; margin: 8px 0 16px; font-style: italic; color: var(--overlay-muted); }
 .sig { display: block; margin-top: 0.5rem; text-align: right; }
 .sig a { color: inherit; text-decoration: underline; }
+
+/* Theme picker: each card previews its own theme with fixed colors. */
+.theme-picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 6px 0 10px; }
+.settings .theme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 10px;
+  border: 2px solid var(--overlay-border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 120ms ease;
+}
+.theme-card:active { transform: scale(0.98); }
+.theme-card input { position: absolute; opacity: 0; pointer-events: none; }
+.theme-card:has(input:checked) { border-color: var(--overlay-accent); }
+.theme-card:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.theme-name { font-weight: 700; font-size: 14px; }
+.theme-desc { font-size: 11.5px; line-height: 1.3; color: var(--overlay-muted); }
+.theme-swatch {
+  position: relative;
+  height: 64px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--sw-bg);
+}
+/* Mini remote: ring, OK key and a dock. */
+.theme-swatch::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  border-radius: 50%;
+  background: var(--sw-ring);
+  box-shadow: var(--sw-ring-shadow, none);
+}
+.theme-swatch::after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--sw-ok);
+}
+.theme-swatch i {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 5px;
+  height: 9px;
+  border-radius: var(--sw-dock-radius, 6px);
+  background: var(--sw-dock);
+}
+[data-theme-preview="ember"] .theme-swatch {
+  --sw-bg: radial-gradient(90% 60% at 50% 0%, rgba(255, 105, 0, 0.28), transparent 70%), #0e0e10;
+  --sw-ring: #232326; --sw-ok: #ff6900; --sw-dock: #232326;
+}
+[data-theme-preview="leanback"] .theme-swatch {
+  --sw-bg: linear-gradient(#24262b, #18191c);
+  --sw-ring: #2d2f33; --sw-ok: #a8c7fa; --sw-dock: #202124; --sw-dock-radius: 0;
+}
+[data-theme-preview="frost"] .theme-swatch {
+  --sw-bg: linear-gradient(#f6f7f9, #e3e6eb);
+  --sw-ring: #fff; --sw-ok: #1c1c1e; --sw-dock: rgba(255, 255, 255, 0.9);
+  --sw-ring-shadow: 3px 3px 8px rgba(160, 168, 184, 0.5);
+}
+[data-theme-preview="classic"] .theme-swatch {
+  --sw-bg: var(--main-bg-color); --sw-ring: rgba(0, 0, 0, 0.3); --sw-ok: var(--main-color); --sw-dock: rgba(0, 0, 0, 0.3); --sw-dock-radius: 6px 6px 0 0;
+}
 
 /* =========================================================================
    Responsive

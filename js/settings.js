@@ -7,6 +7,8 @@
 // then removed. If storage is unavailable (private mode, blocked), settings
 // still work for the current session.
 
+import { CLASSIC_THEME, DEFAULT_THEME, isTheme } from "./themes.js";
+
 export const DEFAULTS = Object.freeze({
   deviceIP: "",
   enableVibrator: true,
@@ -21,6 +23,7 @@ export const DEFAULTS = Object.freeze({
   textMode: "auto", // "auto" (buffered words) | "compose" (Compose & Send)
   keyIntervalMs: 80, // gap between consecutive requests
   allowNonAscii: false, // experimental: send non-ASCII characters
+  theme: DEFAULT_THEME, // see js/themes.js
 });
 
 const PREFIX = "mireco.";
@@ -75,6 +78,7 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
 
   function load() {
     let anyStored = false;
+    let themeStored = false;
     if (storage) {
       try {
         for (const key of Object.keys(DEFAULTS)) {
@@ -82,6 +86,7 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
           if (raw !== null) {
             values[key] = coerce(key, raw);
             anyStored = true;
+            if (key === "theme") themeStored = true;
           }
         }
       } catch {
@@ -92,6 +97,7 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
       const legacy = readLegacyCookies(doc.cookie);
       if (Object.keys(legacy).length) {
         for (const [key, raw] of Object.entries(legacy)) values[key] = coerce(key, raw);
+        values.theme = CLASSIC_THEME; // keep the look they had
         if (save()) {
           for (const key of Object.keys(legacy)) {
             doc.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
@@ -101,6 +107,9 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
     }
     values.keyIntervalMs = clampInterval(values.keyIntervalMs);
     if (values.textMode !== "compose") values.textMode = "auto";
+    // Existing users keep the original look until they pick a theme.
+    if (anyStored && !themeStored) values.theme = CLASSIC_THEME;
+    if (!isTheme(values.theme)) values.theme = DEFAULT_THEME;
     return { ...values };
   }
 
@@ -127,6 +136,7 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
         values[key] = coerce(key, value);
       }
       values.keyIntervalMs = clampInterval(values.keyIntervalMs);
+      if (!isTheme(values.theme)) values.theme = DEFAULT_THEME;
       return save();
     },
     get persistent() {

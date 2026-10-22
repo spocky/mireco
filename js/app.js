@@ -6,6 +6,7 @@ import { controllerUrl, customButtonParams, homeParams, keyEventParams, probeUrl
 import { CommandQueue } from "./command-queue.js";
 import { createKeyboardPanel } from "./keyboard-panel.js";
 import { createSettingsStore, DEFAULTS } from "./settings.js";
+import { applyTheme, CLASSIC_THEME } from "./themes.js";
 import {
   createFetchTransport,
   describePageContext,
@@ -199,6 +200,8 @@ function openSettings({ error } = {}) {
   $("enableVibrator").checked = values.enableVibrator;
   $("allowNonAscii").checked = values.allowNonAscii;
   $("keyIntervalMs").value = values.keyIntervalMs;
+  for (const input of themeInputs) input.checked = input.value === values.theme;
+  syncCustomColors(values.theme);
   setDeviceError(error);
   connectionResult.textContent = "";
   connectionResult.dataset.tone = "";
@@ -218,7 +221,41 @@ function closeSettings() {
   settingsPanel.inert = true;
   settingsButton.setAttribute("aria-expanded", "false");
   background.forEach((el) => (el.inert = false));
+  updateUI(); // drops an unsaved theme preview
   settingsButton.focus({ preventScroll: true });
+}
+
+// ---------- Themes ----------
+
+const themeInputs = [...document.querySelectorAll('input[name="theme"]')];
+
+function selectedTheme() {
+  return themeInputs.find((input) => input.checked)?.value ?? settings.get("theme");
+}
+
+// Custom colors only drive the Classic theme.
+function syncCustomColors(theme) {
+  const classic = theme === CLASSIC_THEME;
+  $("customColors").hidden = !classic;
+  $("customColorsHint").hidden = classic;
+  $("customColorsHint").textContent = "Choose Classic to use your own background and button colors.";
+}
+
+for (const input of themeInputs) {
+  input.addEventListener("change", () => {
+    if (!input.checked) return;
+    // Live preview; Cancel restores the saved theme.
+    const themeColor = applyTheme(document.documentElement, input.value, {
+      bgColor: $("bgColor").value || DEFAULTS.bgColor,
+      btColor: $("btColor").value || DEFAULTS.btColor,
+    });
+    setThemeColor(themeColor);
+    syncCustomColors(input.value);
+  });
+}
+
+function setThemeColor(color) {
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
 }
 
 function saveSettings() {
@@ -237,6 +274,7 @@ function saveSettings() {
   patch.enableVibrator = $("enableVibrator").checked;
   patch.allowNonAscii = $("allowNonAscii").checked;
   patch.keyIntervalMs = $("keyIntervalMs").value;
+  patch.theme = selectedTheme();
   const stored = settings.update(patch);
 
   device = parseDeviceAddress(settings.get("deviceIP"));
@@ -249,8 +287,7 @@ function saveSettings() {
       showStatus(`Device changed: ${cancelled.length} queued command(s) cancelled.`, "warn");
     }
   }
-  updateUI();
-  closeSettings();
+  closeSettings(); // also applies the saved settings to the UI
   if (!stored) showStatus("This browser blocked storage; settings will be lost when the page closes.", "warn");
 }
 
@@ -318,10 +355,10 @@ function updateUI() {
     button.parentNode.style.display = value ? "flex" : "none";
     button.setAttribute("aria-label", value ? `Custom button ${i}: ${value}` : `Custom button ${i}`);
   }
-  const root = document.documentElement;
-  root.style.setProperty("--main-color", settings.get("btColor"));
-  root.style.setProperty("--main-bg-color", settings.get("bgColor"));
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", settings.get("bgColor"));
+  setThemeColor(applyTheme(document.documentElement, settings.get("theme"), {
+    bgColor: settings.get("bgColor"),
+    btColor: settings.get("btColor"),
+  }));
   keyboard.render();
 }
 

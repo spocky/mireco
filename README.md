@@ -43,11 +43,23 @@ The original MiReCo had to be served over plain HTTP (`http://mireco.hopto.org`)
   * com.example.packagename : packagename of an app actually installed on your controlled device. The button will launch it.
   * HDMI1/HDMI2 : change source to HDMI1 / HDMI2 (please note that as of GiTV 1.3.97, HDMI3 is not supported by the GiTV server, thus it won't work until Xiaomi fixes it).
  * custom package for home button (if you installed a custom launcher but didn't disable the stock one, which is still bound to the home button)
- * background and buttons colors
+ * a theme (see below), and background and buttons colors for the Classic theme
  * vibrate on touch
  * typing options: delay between keys, experimental non-ASCII characters
 * Settings are stored in the browser's `localStorage` (they used to be cookies, which on GitHub Pages would be sent to github.io and shared with other `USER.github.io` sites; old cookies are migrated automatically).
 * This app is compatible with webapp standard, so adding it to your home screen from the browser menu gives it its own icon and removes the address bar.
+
+### Themes
+Pick one in Settings → Appearance; tapping a theme previews it immediately, Cancel restores the saved one.
+
+| Theme | Style |
+|---|---|
+| **Ember** (default) | Xiaomi orange on graphite, HyperOS-style squircle keys, glowing orange OK key, floating frosted dock |
+| **Leanback** | Android TV / Google TV: calm slate surfaces, Material 3 tones, round keys, light-blue OK key, edge-to-edge navigation bar |
+| **Frost** | Light theme like a white Mi remote: frosted glass, soft raised keys, dark OK key |
+| **Classic** | The original MiReCo look, using your own background and button colors |
+
+People who already had MiReCo settings stay on Classic until they choose another theme. The theme is applied before the page first paints (`js/theme-boot.js`), so there's no flash of the wrong theme. All themes use system fonts; nothing is loaded from third parties.
 
 ### If a command fails
 A short message explains the likely cause: Local Network Access denied (re-allow it in Chrome: icon left of the address → Permissions/Site settings → *Local network access*), unsupported browser, TV off/asleep or wrong IP, or a timeout (in which case the command *may* still have run). Errors aren't repeated for every key press.
@@ -170,6 +182,7 @@ Code layout (native ES modules, no framework):
 | `js/text-sender.js` | Committed text → queued commands |
 | `js/keyboard-panel.js` | Keyboard sheet UI |
 | `js/settings.js` | Settings (localStorage, cookie migration) |
+| `js/themes.js`, `js/theme-boot.js` | Theme list/application; pre-paint theme loader |
 | `js/app.js` | Remote buttons, settings overlay, wiring |
 | `scripts/` | Preview server, certificate helper, mock device, syntax check |
 

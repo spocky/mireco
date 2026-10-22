@@ -8,6 +8,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { createSettingsStore, DEFAULTS } from "../js/settings.js";
+import { applyTheme, DEFAULT_THEME, THEMES } from "../js/themes.js";
 import { resolveRequestPath } from "../scripts/serve.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -116,6 +117,56 @@ test("settings still work when storage throws", () => {
   assert.equal(store.update({ deviceIP: "10.0.0.2" }), false);
   assert.equal(store.get("deviceIP"), "10.0.0.2");
   assert.equal(store.persistent, false);
+});
+
+// ---------- themes ----------
+
+test("new users get the default theme", () => {
+  const values = createSettingsStore({ storage: memoryStorage(), doc: null }).load();
+  assert.equal(values.theme, DEFAULT_THEME);
+});
+
+test("existing users keep the Classic look until they pick a theme", () => {
+  const storage = memoryStorage();
+  storage.setItem("mireco.deviceIP", "192.168.1.20");
+  assert.equal(createSettingsStore({ storage, doc: null }).load().theme, "classic");
+
+  const doc = { cookie: "deviceIP=192.168.1.20" };
+  assert.equal(createSettingsStore({ storage: memoryStorage(), doc }).load().theme, "classic");
+});
+
+test("theme choice persists and unknown themes fall back", () => {
+  const storage = memoryStorage();
+  const store = createSettingsStore({ storage, doc: null });
+  store.load();
+  store.update({ theme: "frost" });
+  assert.equal(createSettingsStore({ storage, doc: null }).load().theme, "frost");
+  storage.setItem("mireco.theme", "neon");
+  assert.equal(createSettingsStore({ storage, doc: null }).load().theme, DEFAULT_THEME);
+});
+
+test("every theme has CSS, a picker card and a boot-script entry", () => {
+  const css = read("css/style.css");
+  const html = read("index.html");
+  const boot = read("js/theme-boot.js");
+  assert.ok(THEMES.length >= 4);
+  for (const { id } of THEMES) {
+    if (id !== "classic") assert.match(css, new RegExp(`:root\\[data-theme="${id}"\\] \\{`), id);
+    assert.match(css, new RegExp(`\\[data-theme-preview="${id}"\\]`), id);
+    assert.match(html, new RegExp(`name="theme" value="${id}"`), id);
+    assert.match(boot, new RegExp(`\\b${id}\\b`), id);
+  }
+});
+
+test("applyTheme sets the theme and returns the browser UI color", () => {
+  const props = {};
+  const root = { dataset: {}, style: { setProperty: (k, v) => (props[k] = v) } };
+  assert.equal(applyTheme(root, "leanback", { bgColor: "#123", btColor: "#fff" }), "#1b1c1f");
+  assert.equal(root.dataset.theme, "leanback");
+  assert.equal(applyTheme(root, "classic", { bgColor: "#123", btColor: "#fff" }), "#123");
+  assert.equal(props["--main-bg-color"], "#123");
+  applyTheme(root, "bogus", { bgColor: "#123", btColor: "#fff" });
+  assert.equal(root.dataset.theme, DEFAULT_THEME);
 });
 
 // ---------- preview server ----------
