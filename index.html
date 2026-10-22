@@ -2,258 +2,178 @@
 <html lang="en">
 <head>
   <!-- Xiaomi GiTV Remote Control by Spocky -->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <!-- Commands only ever go to the TV's API on port 6095; no other network
+       destination is allowed, so typed text can't be sent anywhere else. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src http://*:6095; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#333" />
+  <meta name="theme-color" content="#333333">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="manifest" href="site.webmanifest">
   <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
   <meta name="msapplication-TileColor" content="#da532c">
-  <meta name="theme-color" content="#333333">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <style>
-    :root {
-      --main-color: #fff;
-      --main-bg-color: #333;
-      --main-bg-sec-color: rgba(0,0,0,0.3);
-      --font-size:10vmin;
-      --font-size-neg:-5vmin;
-      --footer-size:10vmax;
-      --remote-size:60vmin;
-    }
-    html, body{height:100%;}
-    body {background:var(--main-bg-color);color:var(--main-color);font-weight:bold;margin:0;padding:0;display:flex;flex-direction: column;align-items:center;justify-content: space-between;}
-    ul{display:flex;flex-wrap:wrap;padding-left:0;margin:0}
-    ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
-    footer {background:var(--main-bg-sec-color);width:100%;}
-    footer ul{height:var(--footer-size);}
-    .main a{color:var(--main-color);text-decoration:none;font-size:var(--font-size);}
-    .shadow{box-shadow: 0px 0px 20px 0px #000;}
-    .bg2{background:var(--main-bg-sec-color);border-radius:50%;}
-    .remote{width:var(--remote-size);height:var(--remote-size);border-radius: 50%;position: relative;flex-shrink: 0;box-sizing:border-box;}
-    .remote a {position:absolute;}
-    a.up{top: 0;left: 50%; margin-left: var(--font-size-neg);}
-    a.down{bottom: 0;left: 50%; margin-left: var(--font-size-neg);}
-    a.left{top: 50%;left: 0; margin-top: var(--font-size-neg);}
-    a.right{top: 50%;right: 0; margin-top: var(--font-size-neg);}
-    a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;width:30%;height:30%;margin-top: -15%;margin-left: -15%;}
-    .more{position:absolute;top:3vw;right:3vw;}
-    .power{position:absolute;top:3vw;left:3vw;}
-    #settings{display:flex;height:100%;width:100%;position:fixed;overflow:hidden;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;transition:transform 300ms ease;will-change:transform;transform:translateX(100%);}
-    #settings input[type="text"]{display:block;width:90%}
-    #settings h3{margin:0;text-align:center;}
-    #deviceIP::placeholder{color:#f00;}
-    .wrapper{display:flex;flex-direction:column;flex: 1 0 auto;justify-content:space-around;}
-    .validate{display:flex;justify-content:space-around;margin-top:1rem;}
-    #enableVibrator {vertical-align:middle;}
-    small{margin-top:1rem;font-style:italic;}
-    .sig{display:block;margin-top: .5rem;text-align: right;}
-    .sig a{font-size:inherit;text-decoration: underline}
-    .buttons{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-around;}
-    .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;width:10vmin;display:flex;flex-direction:column;}
-    .cust li {display:none;}
-    #destFrame{display:none;}
-    @media screen and (orientation:landscape) {
-      .buttons ul.vol{width:30%;height:auto;flex-direction:row-reverse;}
-      .buttons li {height: auto;}
-      .cust{margin-top:-30%;height:30vmax}
-      .wrapper{flex-direction:row;flex: 0 0 30%;flex-wrap: wrap;justify-content:flex-start}
-    }
-  </style>
-  <script>
-    var params = { 
-     "deviceIP" : "",
-     "enableVibrator" : true, 
-     "customPackage1": "com.google.android.youtube.tv",  
-     "customPackage2": "",
-     "customPackage3": "com.spocky.projengmenu",
-     "customPackage4": "",
-     "customLauncher": "",
-     "bgColor": "#333",
-     "btColor": "#fff"
-    };
-    function setCookie(cname, cvalue, exdays) {
-      var d = new Date();
-      d.setTime(d.getTime() + (exdays*24*60*60*1000));
-      var expires = "expires="+ d.toUTCString();
-      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
-    function getCookie(cname) {
-      var name = cname + "=";
-      var decodedCookie = decodeURIComponent(document.cookie);
-      var ca = decodedCookie.split(';');
-      for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          c = c.substring(name.length, c.length);
-          switch(c.toLowerCase()){
-            case "true":
-              return true;
-            case "false":
-              return false;
-            default:
-              return c;
-          }
-        }
-      }
-      return null;
-    }
-    function sendEvent(eventName){
-      execCommand('keyevent&keycode='+eventName);
-    }
-    function launchApp(customButton){
-      var app = params["customPackage" + customButton];
-      if(app=="") {
-        return;
-      }
-        switch(app.toLowerCase()){
-          case "hdmi1":
-          case "hdmi2":
-          case "hdmi3": // hdmi3 doesn't work at least on 1.3.97 and before
-            execCommand('changesource&source='+app.toLowerCase());
-          break;
-          default:
-            execCommand('startapp&type=packagename&packagename='+app);
-          break;
-        }
-    }
-    function execCommand(action){
-      if(params["deviceIP"]==""){
-        toggleSettings();
-        return;
-      }
-      if(params["enableVibrator"] && window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-      var destFrame = document.getElementById("destFrame");
-      destFrame.src='http://'+params["deviceIP"]+':6095/controller?action='+action;
-    }
-    function toggleSettings(){
-      var tmp;
-      var settings = document.getElementById("settings");
+  <meta name="msapplication-config" content="browserconfig.xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+  <title>Xiaomi GiTV Remote Control</title>
+</head>
+<body class="main">
+  <!-- Material Icons (Apache License 2.0), inlined so no third-party font is loaded. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true">
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M14 7l-5 5 5 5V7z"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"/></symbol>
+    <symbol id="i-adjust" viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></symbol>
+    <symbol id="i-vol-up" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></symbol>
+    <symbol id="i-vol-down" viewBox="0 0 24 24"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.59 12 19 15.59z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></symbol>
+  </svg>
 
-      for(var key in params){
-        if(typeof params[key] === "boolean") {
-          document.getElementById(key).checked = params[key];
-        } else {
-          document.getElementById(key).value = params[key];
-        }
-      }
-      settings.style.transform=(settings.style.transform=="translateX(0%)"?"translateX(100%)":"translateX(0%)");
-    }
-    function saveSettings(){
-      for(var key in params){
-        if(typeof params[key] === "boolean") {
-          params[key] = document.getElementById(key).checked;
-        } else {
-          params[key] = document.getElementById(key).value;
-        }
-        setCookie(key,params[key],3650);
-      }
-	  updateUI();
-      toggleSettings();
-    }
-    function loadSettings(){
-      var tmp;
-      for(var key in params){
-        tmp = getCookie(key);
-        if(tmp!=null) params[key]=tmp;
-      }
-    }
-	function home(){
-	  var app = params["customLauncher"];
-      if(app=="") {
-        return sendEvent('home');
-      }
-	  execCommand('startapp&type=packagename&packagename='+app);
-	}
-    function updateUI(){
-      var tmp;
-      for(var i=1; i<5; i++){
-        tmp = document.getElementById("customButton"+i);
-        tmp.parentNode.style.display=(params["customPackage"+i]!=="")?"flex":"none";
-      }
-      root = document.documentElement;
-      root.style.setProperty('--main-color', params["btColor"]);
-      root.style.setProperty('--main-bg-color', params["bgColor"]);
-    }
-	function checkHash(){
-      ip = window.location.hash;
-      if(ip && ip.length>1){
-		setCookie("deviceIP",ip.substring(1),3650);
-	    window.location.hash='';
-      }
-	}
-    function init(){
-	  checkHash();
-      loadSettings();
-      updateUI();
-    }
-    document.onreadystatechange = function(e) { if (document.readyState === 'interactive') init(); };
-  </script>
-  <title>Xiaomi GITV Remote Control</title>
-  <body class="main">
-    <div>
-      <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
-      <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
+  <header class="topbar">
+    <button type="button" class="icon-btn power" data-key="power" aria-label="Power off">
+      <svg class="icon"><use href="#i-power"/></svg>
+    </button>
+    <p id="statusPill" class="status-pill" role="status" aria-live="polite" hidden></p>
+    <div class="topbar-end">
+      <button type="button" id="keyboardButton" class="icon-btn" aria-label="Type text on the TV" aria-haspopup="dialog" aria-controls="keyboardPanel" aria-expanded="false">
+        <svg class="icon"><use href="#i-keyboard"/></svg>
+        <span id="keyboardBadge" class="badge" hidden></span>
+      </button>
+      <button type="button" id="settingsButton" class="icon-btn" aria-label="Settings" aria-haspopup="dialog" aria-controls="settings" aria-expanded="false">
+        <svg class="icon"><use href="#i-more"/></svg>
+      </button>
     </div>
-    <div class="remote bg2 shadow">
-      <a class="material-icons up" href="javascript:sendEvent('up');">arrow_drop_up</a>
-      <a class="material-icons left" href="javascript:sendEvent('left');">arrow_left</a>
-      <a class="material-icons right" href="javascript:sendEvent('right');">arrow_right</a>
-      <a class="material-icons down" href="javascript:sendEvent('down');">arrow_drop_down</a>
-      <a class="enter" href="javascript:sendEvent('enter');"></a>
+  </header>
+
+  <main class="remote-area">
+    <div class="remote" role="group" aria-label="Navigation">
+      <button type="button" class="dpad up" data-key="up" aria-label="Up"><svg class="icon"><use href="#i-up"/></svg></button>
+      <button type="button" class="dpad left" data-key="left" aria-label="Left"><svg class="icon"><use href="#i-left"/></svg></button>
+      <button type="button" class="dpad right" data-key="right" aria-label="Right"><svg class="icon"><use href="#i-right"/></svg></button>
+      <button type="button" class="dpad down" data-key="down" aria-label="Down"><svg class="icon"><use href="#i-down"/></svg></button>
+      <button type="button" class="enter" data-key="enter" aria-label="OK"><span class="ok-label" aria-hidden="true">OK</span></button>
     </div>
     <div class="buttons">
       <ul class="cust">
-        <li><a class="material-icons" id="customButton1" href="javascript:launchApp(1);">adjust</a></li>
-        <li><a class="material-icons" id="customButton2" href="javascript:launchApp(2);">adjust</a></li>
+        <li><button type="button" class="icon-btn tile" id="customButton1" data-app="1" aria-label="Custom button 1"><svg class="icon"><use href="#i-adjust"/></svg></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton2" data-app="2" aria-label="Custom button 2"><svg class="icon"><use href="#i-adjust"/></svg></button></li>
       </ul>
-      <ul class="vol bg2 shadow">
-        <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
-        <li><a class="material-icons" href="javascript:sendEvent('volumedown');">volume_down</a></li>
+      <ul class="vol">
+        <li><button type="button" class="icon-btn tile" data-key="volumeup" aria-label="Volume up"><svg class="icon"><use href="#i-vol-up"/></svg></button></li>
+        <li><button type="button" class="icon-btn tile" data-key="volumedown" aria-label="Volume down"><svg class="icon"><use href="#i-vol-down"/></svg></button></li>
       </ul>
       <ul class="cust">
-        <li><a class="material-icons" id="customButton3" href="javascript:launchApp(3);">adjust</a></li>
-        <li><a class="material-icons" id="customButton4" href="javascript:launchApp(4);">adjust</a></li>
+        <li><button type="button" class="icon-btn tile" id="customButton3" data-app="3" aria-label="Custom button 3"><svg class="icon"><use href="#i-adjust"/></svg></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton4" data-app="4" aria-label="Custom button 4"><svg class="icon"><use href="#i-adjust"/></svg></button></li>
       </ul>
     </div>
-    <footer class="shadow">
-      <ul>
-        <li class="home"><a class="material-icons" href="javascript:home();">home</a></li>
-        <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
-        <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
-      </ul>
-    </footer>
-    <div id="settings">
-      <h3>MiReCo Settings</h3>
-      <div class="wrapper">
-        <label for="deviceIP">Device IP Address<input type="text" id="deviceIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" /></label>
-        <label for="customPackage1">Custom button #1<input type="text" id="customPackage1" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customLauncher">Home button custom launcher<input type="text" id="customLauncher" value="" placeholder="com.example.packagename" /></label>
-        <label for="bgColor">Background color<input type="text" class="jscolor {hash:true}" id="bgColor" value="" placeholder="#333" /></label>
-        <label for="btColor">Buttons color<input type="text" class="jscolor {hash:true}" id="btColor" value="" placeholder="#fff" /></label>
-        <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
+  </main>
+
+  <footer>
+    <ul>
+      <li class="home"><button type="button" class="icon-btn" data-action="home" aria-label="Home"><svg class="icon"><use href="#i-home"/></svg></button></li>
+      <li class="back"><button type="button" class="icon-btn" data-key="back" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></button></li>
+      <li class="menu"><button type="button" class="icon-btn" data-key="menu" aria-label="Menu"><svg class="icon"><use href="#i-menu"/></svg></button></li>
+    </ul>
+  </footer>
+
+  <!-- Text entry bottom sheet. Non-modal: the remote above stays usable. -->
+  <section id="keyboardPanel" class="sheet" role="dialog" aria-labelledby="keyboardTitle" hidden>
+    <div class="sheet-head">
+      <h2 id="keyboardTitle">Type on TV</h2>
+      <div class="segmented" role="radiogroup" aria-label="Transmission mode">
+        <label><input type="radio" name="textMode" value="auto" checked><span>Auto words</span></label>
+        <label><input type="radio" name="textMode" value="compose"><span>Compose &amp; Send</span></label>
       </div>
-      <div class="validate">
-        <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
-        <a href="javascript:saveSettings();" class="material-icons">check</a>
+      <button type="button" id="keyboardClose" class="icon-btn small" aria-label="Close keyboard">
+        <svg class="icon"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <p id="modeHint" class="hint"></p>
+    <textarea id="textEntry" rows="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" aria-label="Text to send" aria-describedby="modeHint textStatus" placeholder="Type here…"></textarea>
+    <div id="recovery" class="recovery" role="alert" hidden>
+      <p id="recoveryText"></p>
+      <div class="row">
+        <button type="button" id="recoveryRestore" class="text-btn">Put back in draft</button>
+        <button type="button" id="recoveryDiscard" class="text-btn">Discard</button>
       </div>
-      <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)
-      <span class="sig"><a href="https://github.com/spocky/mireco/">MiReCo</a>, from Spocky with love <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MH5HLMP8ED24N&lc=GB&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">(buy me a drink)</a></span>
+    </div>
+    <div class="sheet-foot">
+      <p id="textStatus" class="text-status" data-state="idle" aria-live="polite">Ready</p>
+      <button type="button" id="textStop" class="text-btn" hidden><svg class="icon"><use href="#i-stop"/></svg>Stop</button>
+      <button type="button" id="textClear" class="text-btn" aria-label="Clear draft"><svg class="icon"><use href="#i-clear"/></svg>Clear</button>
+      <button type="button" id="textSend" class="primary-btn"><svg class="icon"><use href="#i-send"/></svg>Send</button>
+    </div>
+  </section>
+
+  <div id="settings" class="settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" inert>
+    <div class="settings-scroll">
+      <h2 id="settingsTitle">MiReCo Settings</h2>
+      <fieldset>
+        <legend>Device</legend>
+        <label for="deviceIP">Device IP address
+          <input type="text" id="deviceIP" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="192.168.1.x" aria-describedby="deviceIPError">
+        </label>
+        <p id="deviceIPError" class="field-error" hidden></p>
+        <div class="row">
+          <button type="button" id="testConnection" class="text-btn"><svg class="icon"><use href="#i-wifi"/></svg>Test connection</button>
+        </div>
+        <p id="connectionResult" class="connection-result" role="status" aria-live="polite"></p>
+        <details class="connection-info">
+          <summary>How this page reaches your TV</summary>
+          <p id="pageContext"></p>
+          <p id="permissionInfo"></p>
+        </details>
+      </fieldset>
+      <fieldset>
+        <legend>Buttons</legend>
+        <label for="customPackage1">Custom button #1<input type="text" id="customPackage1" autocomplete="off" spellcheck="false" placeholder="com.example.packagename / HDMI1 / HDMI2"></label>
+        <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" autocomplete="off" spellcheck="false" placeholder="com.example.packagename / HDMI1 / HDMI2"></label>
+        <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" autocomplete="off" spellcheck="false" placeholder="com.example.packagename / HDMI1 / HDMI2"></label>
+        <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" autocomplete="off" spellcheck="false" placeholder="com.example.packagename / HDMI1 / HDMI2"></label>
+        <label for="customLauncher">Home button custom launcher<input type="text" id="customLauncher" autocomplete="off" spellcheck="false" placeholder="com.example.packagename"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Appearance</legend>
+        <div class="two-col">
+          <label for="bgColor">Background color<input type="text" class="color-input" id="bgColor" autocomplete="off" spellcheck="false" placeholder="#333"></label>
+          <label for="btColor">Buttons color<input type="text" class="color-input" id="btColor" autocomplete="off" spellcheck="false" placeholder="#fff"></label>
+        </div>
+        <label for="enableVibrator" class="check"><input id="enableVibrator" type="checkbox">Vibrate on touch</label>
+      </fieldset>
+      <fieldset>
+        <legend>Typing</legend>
+        <label for="keyIntervalMs">Delay between keys (ms)
+          <input type="number" id="keyIntervalMs" min="0" max="1000" step="10" inputmode="numeric">
+        </label>
+        <label for="allowNonAscii" class="check"><input id="allowNonAscii" type="checkbox">Send non-ASCII characters (á, ñ, ü…). Experimental: untested on GiTV.</label>
+      </fieldset>
+      <small>Add this page to your home screen from the browser menu to use it like an app (no address bar).
+        <span class="sig"><a href="https://github.com/spocky/mireco/" target="_blank" rel="noopener">MiReCo</a>, from Spocky with love <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=MH5HLMP8ED24N&amp;lc=GB&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank" rel="noopener">(buy me a drink)</a></span>
       </small>
     </div>
-    <iframe id="destFrame" src="//goo.gl/86jmF9"></iframe>
-  </body>
+    <div class="validate">
+      <button type="button" id="settingsCancel" class="icon-btn" aria-label="Cancel"><svg class="icon"><use href="#i-close"/></svg></button>
+      <button type="button" id="settingsSave" class="icon-btn" aria-label="Save settings"><svg class="icon"><use href="#i-check"/></svg></button>
+    </div>
+  </div>
   <script src="jscolor.js"></script>
-  </html>
+</body>
+</html>
