@@ -1,6 +1,10 @@
 {
+    "id": "./",
     "name": "MiReCo",
     "short_name": "MiReCo",
+    "description": "Web remote control for Xiaomi GiTV devices",
+    "start_url": "./",
+    "scope": "./",
     "icons": [
         {
             "src": "android-chrome-192x192.png",
