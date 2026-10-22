@@ -2,11 +2,14 @@
 // transport, command queue and keyboard panel.
 
 import { parseDeviceAddress } from "./address.js";
+import { renderIcon } from "./app-icons.js";
+import { describeButton } from "./apps.js";
 import { controllerUrl, customButtonParams, homeParams, keyEventParams, probeUrl } from "./commands.js";
 import { CommandQueue } from "./command-queue.js";
 import { createKeyboardPanel } from "./keyboard-panel.js";
-import { createSettingsStore, DEFAULTS } from "./settings.js";
-import { applyTheme, CLASSIC_THEME } from "./themes.js";
+import { createSettingsPanel } from "./settings-panel.js";
+import { createSettingsStore } from "./settings.js";
+import { applyTheme } from "./themes.js";
 import {
   createFetchTransport,
   describePageContext,
@@ -89,7 +92,7 @@ function vibrate() {
 
 function sendRemote(params, label) {
   if (!device.ok) {
-    openSettings({ error: device.error });
+    settingsPanel.open({ error: device.error });
     return;
   }
   vibrate();
@@ -151,7 +154,7 @@ const keyboard = createKeyboardPanel({
   settings,
   explainError,
   vibrate,
-  onOpen: () => closeSettings(),
+  onOpen: () => settingsPanel.close(),
   onNeedsDevice: (message) => showStatus(message + " Open Settings to set it.", "warn"),
 });
 
@@ -159,124 +162,24 @@ window.addEventListener("beforeunload", (e) => {
   if (keyboard.hasUnsentWork()) e.preventDefault();
 });
 
-// ---------- Settings overlay ----------
+// ---------- Settings ----------
 
-const settingsPanel = $("settings");
-const settingsButton = $("settingsButton");
-const deviceInput = $("deviceIP");
-const deviceError = $("deviceIPError");
-const connectionResult = $("connectionResult");
-const background = [document.querySelector(".topbar"), document.querySelector(".remote-area"), document.querySelector("footer"), $("keyboardPanel")];
-const TEXT_FIELDS = ["deviceIP", "customPackage1", "customPackage2", "customPackage3", "customPackage4", "customLauncher", "bgColor", "btColor"];
-const colorPickers = new Map();
+const settingsPanel = createSettingsPanel({
+  doc: document,
+  settings,
+  onOpen: () => {
+    keyboard.close({ restoreFocus: false });
+    refreshPermission();
+  },
+  onClose: () => updateUI(), // also drops an unsaved theme preview
+  onSave: saveSettings,
+  testConnection,
+  refreshConnectionInfo: renderConnectionInfo,
+});
 
-function initColorPickers() {
-  if (colorPickers.size || typeof window.jscolor !== "function") return;
-  for (const id of ["bgColor", "btColor"]) {
-    try {
-      colorPickers.set(id, new window.jscolor($(id), { hash: true }));
-    } catch (err) {
-      console.warn("Color picker unavailable", err);
-    }
-  }
-}
-
-function isSettingsOpen() {
-  return settingsPanel.classList.contains("open");
-}
-
-function setDeviceError(message) {
-  deviceError.textContent = message || "";
-  deviceError.hidden = !message;
-  deviceInput.setAttribute("aria-invalid", message ? "true" : "false");
-}
-
-function openSettings({ error } = {}) {
-  keyboard.close({ restoreFocus: false });
-  initColorPickers();
-  const values = settings.all();
-  for (const id of TEXT_FIELDS) $(id).value = values[id];
-  for (const picker of colorPickers.values()) picker.importColor?.();
-  $("enableVibrator").checked = values.enableVibrator;
-  $("allowNonAscii").checked = values.allowNonAscii;
-  $("keyIntervalMs").value = values.keyIntervalMs;
-  for (const input of themeInputs) input.checked = input.value === values.theme;
-  syncCustomColors(values.theme);
-  setDeviceError(error);
-  connectionResult.textContent = "";
-  connectionResult.dataset.tone = "";
-  settingsPanel.inert = false;
-  settingsPanel.classList.add("open");
-  settingsButton.setAttribute("aria-expanded", "true");
-  background.forEach((el) => (el.inert = true));
-  refreshPermission();
-  // Only jump into the IP field (opening the soft keyboard) when it needs fixing.
-  (error ? deviceInput : settingsPanel).focus({ preventScroll: true });
-}
-
-function closeSettings() {
-  if (!isSettingsOpen()) return;
-  for (const picker of colorPickers.values()) picker.hide?.();
-  settingsPanel.classList.remove("open");
-  settingsPanel.inert = true;
-  settingsButton.setAttribute("aria-expanded", "false");
-  background.forEach((el) => (el.inert = false));
-  updateUI(); // drops an unsaved theme preview
-  settingsButton.focus({ preventScroll: true });
-}
-
-// ---------- Themes ----------
-
-const themeInputs = [...document.querySelectorAll('input[name="theme"]')];
-
-function selectedTheme() {
-  return themeInputs.find((input) => input.checked)?.value ?? settings.get("theme");
-}
-
-// Custom colors only drive the Classic theme.
-function syncCustomColors(theme) {
-  const classic = theme === CLASSIC_THEME;
-  $("customColors").hidden = !classic;
-  $("customColorsHint").hidden = classic;
-  $("customColorsHint").textContent = "Choose Classic to use your own background and button colors.";
-}
-
-for (const input of themeInputs) {
-  input.addEventListener("change", () => {
-    if (!input.checked) return;
-    // Live preview; Cancel restores the saved theme.
-    const themeColor = applyTheme(document.documentElement, input.value, {
-      bgColor: $("bgColor").value || DEFAULTS.bgColor,
-      btColor: $("btColor").value || DEFAULTS.btColor,
-    });
-    setThemeColor(themeColor);
-    syncCustomColors(input.value);
-  });
-}
-
-function setThemeColor(color) {
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", color);
-}
-
-function saveSettings() {
-  const ip = deviceInput.value.trim();
-  const parsed = ip ? parseDeviceAddress(ip) : { ok: false, empty: true };
-  if (ip && !parsed.ok) {
-    setDeviceError(parsed.error);
-    deviceInput.focus();
-    return;
-  }
+function saveSettings(patch) {
   const previousHost = device.ok ? device.host : "";
-  const patch = { deviceIP: parsed.ok ? parsed.host : "" };
-  for (const id of TEXT_FIELDS.slice(1)) patch[id] = $(id).value.trim();
-  patch.bgColor ||= DEFAULTS.bgColor;
-  patch.btColor ||= DEFAULTS.btColor;
-  patch.enableVibrator = $("enableVibrator").checked;
-  patch.allowNonAscii = $("allowNonAscii").checked;
-  patch.keyIntervalMs = $("keyIntervalMs").value;
-  patch.theme = selectedTheme();
   const stored = settings.update(patch);
-
   device = parseDeviceAddress(settings.get("deviceIP"));
   queue.intervalMs = settings.get("keyIntervalMs");
   if ((device.ok ? device.host : "") !== previousHost) {
@@ -287,35 +190,25 @@ function saveSettings() {
       showStatus(`Device changed: ${cancelled.length} queued command(s) cancelled.`, "warn");
     }
   }
-  closeSettings(); // also applies the saved settings to the UI
   if (!stored) showStatus("This browser blocked storage; settings will be lost when the page closes.", "warn");
+  return stored;
 }
 
-async function testConnection() {
-  const parsed = parseDeviceAddress(deviceInput.value);
-  if (!parsed.ok) {
-    setDeviceError(parsed.error);
-    return;
-  }
-  setDeviceError("");
-  connectionResult.dataset.tone = "";
-  connectionResult.textContent = `Contacting ${parsed.host}:6095…`;
+async function testConnection(parsed) {
   try {
     await transport.send(probeUrl(parsed.host), { addressSpace: parsed.addressSpace });
-    connectionResult.dataset.tone = "ok";
-    connectionResult.textContent = `Something answered at ${parsed.host}:6095, so the browser can reach it. The TV doesn't confirm individual commands, so check the screen when you press a button.`;
+    refreshPermission(parsed.addressSpace);
+    return {
+      tone: "ok",
+      message: `Something answered at ${parsed.host}:6095, so the browser can reach it. The TV doesn't confirm individual commands, so check the screen when you press a button.`,
+    };
   } catch (error) {
     const permissionState = await refreshPermission(parsed.addressSpace);
-    connectionResult.dataset.tone = "error";
-    connectionResult.textContent = explainFailure({
-      error,
-      pageKind: pageContext.kind,
-      permissionState,
-      host: parsed.host,
-      addressSpace: parsed.addressSpace,
-    });
+    return {
+      tone: "error",
+      message: explainFailure({ error, pageKind: pageContext.kind, permissionState, host: parsed.host, addressSpace: parsed.addressSpace }),
+    };
   }
-  refreshPermission(parsed.addressSpace);
 }
 
 function renderConnectionInfo() {
@@ -336,29 +229,21 @@ function renderConnectionInfo() {
   $("permissionInfo").textContent = text;
 }
 
-settingsButton.addEventListener("click", () => (isSettingsOpen() ? closeSettings() : openSettings()));
-$("settingsCancel").addEventListener("click", closeSettings);
-$("settingsSave").addEventListener("click", saveSettings);
-$("testConnection").addEventListener("click", testConnection);
-deviceInput.addEventListener("input", () => setDeviceError(""));
-settingsPanel.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeSettings();
-  else if (e.key === "Enter" && e.target.matches("input[type=text], input[type=number]")) saveSettings();
-});
-
 // ---------- Appearance ----------
 
 function updateUI() {
   for (let i = 1; i <= 4; i++) {
-    const value = settings.get("customPackage" + i);
+    const info = describeButton(settings.get("customPackage" + i), settings.get("customIcon" + i));
     const button = $("customButton" + i);
-    button.parentNode.style.display = value ? "flex" : "none";
-    button.setAttribute("aria-label", value ? `Custom button ${i}: ${value}` : `Custom button ${i}`);
+    button.parentNode.style.display = info ? "flex" : "none";
+    if (info) renderIcon(button, info.icon);
+    button.setAttribute("aria-label", info ? info.action : `Shortcut ${i}`);
   }
-  setThemeColor(applyTheme(document.documentElement, settings.get("theme"), {
+  const themeColor = applyTheme(document.documentElement, settings.get("theme"), {
     bgColor: settings.get("bgColor"),
     btColor: settings.get("btColor"),
-  }));
+  });
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
   keyboard.render();
 }
 

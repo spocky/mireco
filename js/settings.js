@@ -24,6 +24,11 @@ export const DEFAULTS = Object.freeze({
   keyIntervalMs: 80, // gap between consecutive requests
   allowNonAscii: false, // experimental: send non-ASCII characters
   theme: DEFAULT_THEME, // see js/themes.js
+  // Icon per custom button: "" (automatic), "glyph:<id>" or "text:<chars>" (see js/apps.js).
+  customIcon1: "",
+  customIcon2: "",
+  customIcon3: "",
+  customIcon4: "",
 });
 
 const PREFIX = "mireco.";
