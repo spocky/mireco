@@ -59,6 +59,10 @@ Pick one in Settings → Appearance; tapping a theme previews it immediately, Ca
 | **Frost** | Light theme like a white Mi remote: frosted glass, soft raised keys, dark OK key |
 | **Classic** | The original MiReCo look, using your own background and button colors |
 
+![The remote in the Ember, Leanback, Frost and Classic themes at phone size](docs/screenshots/themes-remote.png)
+
+![The keyboard panel in Compose & Send mode in each theme](docs/screenshots/themes-keyboard.png)
+
 People who already had MiReCo settings stay on Classic until they choose another theme. The theme is applied before the page first paints (`js/theme-boot.js`), so there's no flash of the wrong theme. All themes use system fonts; nothing is loaded from third parties.
 
 ### If a command fails
