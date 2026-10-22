@@ -1,0 +1,22 @@
+{
+  "name": "mireco",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Xiaomi GiTV web remote control (static site, no backend)",
+  "license": "GPL-3.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "preview": "node scripts/serve.mjs --host 127.0.0.1 --port 8080",
+    "preview:lan": "node scripts/serve.mjs --host 0.0.0.0 --port 8080",
+    "preview:https": "node scripts/serve.mjs --https --host 127.0.0.1 --port 8443",
+    "preview:https:lan": "node scripts/serve.mjs --https --host 0.0.0.0 --port 8443",
+    "certs": "node scripts/make-cert.mjs",
+    "mock-device": "node scripts/mock-device.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "verify": "npm run check && npm test"
+  }
+}

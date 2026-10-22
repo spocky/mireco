@@ -1,0 +1,17 @@
+# Dependencies (none are required, but keep npm artefacts out of git)
+node_modules/
+npm-debug.log*
+
+# Local development certificates and keys (npm run certs). Never commit these.
+certs/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
