@@ -1,6 +1,7 @@
 // Keyboard bottom sheet: wires the text entry field, the input controller,
 // the command queue and the panel's status/recovery UI together.
 
+import { createKeyTester } from "./key-tester.js";
 import { TextInputController, completedPrefixLength } from "./text-input.js";
 import { createTextSender } from "./text-sender.js";
 import { tokensToText } from "./text-encoding.js";
@@ -8,7 +9,13 @@ import { tokensToText } from "./text-encoding.js";
 const MODE_HINTS = {
   auto: "Auto words: each word is sent after you finish it with a space or Enter, so suggestions and autocorrect can still change it. Press Send for the last word. Words already sent can't be corrected.",
   compose: "Compose & Send: nothing is sent while you type or edit. Press Send to type the whole text on the TV.",
+  tester: "Key tester: sends exactly the key name you enter (keyevent&keycode=…), to find keys your TV understands beyond the documented ones. The TV doesn't confirm keys, so watch the screen. Tap the title 8 times to hide this mode again.",
 };
+
+// Hidden key tester: tap the panel title this many times, each tap within
+// TAP_WINDOW_MS of the previous one (a pause starts the count again).
+export const UNLOCK_TAPS = 8;
+export const TAP_WINDOW_MS = 1000;
 
 /**
  * @param {object} deps
@@ -20,8 +27,9 @@ const MODE_HINTS = {
  * @param {() => void} deps.vibrate
  * @param {() => void} deps.onOpen   called before the panel opens (e.g. close settings)
  * @param {(message: string) => void} deps.onNeedsDevice
+ * @param {() => number} [deps.now] clock for the unlock gesture (tests)
  */
-export function createKeyboardPanel({ doc, queue, getDevice, settings, explainError, vibrate, onOpen, onNeedsDevice }) {
+export function createKeyboardPanel({ doc, queue, getDevice, settings, explainError, vibrate, onOpen, onNeedsDevice, now = () => Date.now() }) {
   const $ = (id) => doc.getElementById(id);
   const panel = $("keyboardPanel");
   const openButton = $("keyboardButton");
@@ -35,6 +43,10 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   const recovery = $("recovery");
   const recoveryText = $("recoveryText");
   const modeInputs = [...panel.querySelectorAll('input[name="textMode"]')];
+  const title = $("keyboardTitle");
+  const testerOption = $("testerModeOption");
+  const segmented = panel.querySelector(".segmented");
+  const tester = createKeyTester({ doc, queue, getDevice, explainError, vibrate });
 
   const commit = createTextSender({ queue, getDevice, getAllowNonAscii: () => settings.get("allowNonAscii") });
   const controller = new TextInputController({ field, commit, mode: settings.get("textMode") });
@@ -42,6 +54,10 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   let lastError = null; // {message, tone}
   let unsent = ""; // text recovered after a failure or Stop
   let sentSinceIdle = 0;
+  let testerUnlocked = false;
+  let testerMode = false; // never stored: the saved text mode stays auto/compose
+  let taps = 0;
+  let lastTap = -Infinity;
 
   function isOpen() {
     return !panel.hidden;
@@ -54,6 +70,10 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
     syncMode();
     render();
     // Focus inside the click handler so Android opens the soft keyboard.
+    if (testerMode) {
+      tester.focus();
+      return;
+    }
     field.focus({ preventScroll: true });
     const end = field.value.length;
     field.setSelectionRange(end, end);
@@ -68,9 +88,26 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   }
 
   function syncMode() {
-    const mode = controller.mode;
+    const mode = testerMode ? "tester" : controller.mode;
     for (const input of modeInputs) input.checked = input.value === mode;
     hint.textContent = MODE_HINTS[mode];
+    panel.dataset.mode = mode;
+    testerOption.hidden = !testerUnlocked;
+    segmented.classList.toggle("has-tester", testerUnlocked);
+  }
+
+  function onTitleTap() {
+    const t = now();
+    taps = t - lastTap <= TAP_WINDOW_MS ? taps + 1 : 1;
+    lastTap = t;
+    if (taps < UNLOCK_TAPS) return;
+    taps = 0;
+    lastTap = -Infinity;
+    testerUnlocked = !testerUnlocked;
+    if (!testerUnlocked) testerMode = false;
+    vibrate();
+    syncMode();
+    render();
   }
 
   function setError(message, tone = "error") {
@@ -234,13 +271,21 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   for (const input of modeInputs) {
     input.addEventListener("change", () => {
       if (!input.checked) return;
-      controller.setMode(input.value);
-      settings.update({ textMode: input.value });
+      if (input.value === "tester") {
+        testerMode = true;
+      } else {
+        testerMode = false;
+        controller.setMode(input.value);
+        settings.update({ textMode: input.value });
+      }
       lastError = null;
       syncMode();
       render();
+      if (testerMode) tester.focus();
     });
   }
+
+  title.addEventListener("click", onTitleTap);
 
   field.addEventListener("input", () => {
     // Editing clears a stale warning (but not an unsupported-character error,
@@ -259,6 +304,13 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
     render,
     controller,
     field,
+    tester,
+    get testerUnlocked() {
+      return testerUnlocked;
+    },
+    get mode() {
+      return testerMode ? "tester" : controller.mode;
+    },
     /** Commands cancelled elsewhere (e.g. device changed) */
     reportCancelled(commands, why) {
       addUnsent(commands.filter((c) => c.kind === "text"), why);

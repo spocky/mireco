@@ -662,6 +662,47 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
 .text-btn:active, .primary-btn:active { transform: scale(0.96); }
 .text-btn:disabled, .primary-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 
+/* Key tester (hidden mode of the keyboard panel). */
+.sheet h2 { -webkit-user-select: none; user-select: none; cursor: default; }
+.key-tester { display: none; flex-direction: column; gap: 8px; }
+.sheet[data-mode="tester"] .key-tester { display: flex; }
+.sheet[data-mode="tester"] #textEntry,
+.sheet[data-mode="tester"] .recovery,
+.sheet[data-mode="tester"] .sheet-foot { display: none !important; }
+.tester-row { display: flex; gap: 8px; }
+#testerKey {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 12px;
+  background: var(--field-bg);
+  color: var(--fg);
+  font: 16px ui-monospace, "Cascadia Mono", monospace;
+}
+#testerKey:focus { outline: none; border-color: var(--accent); }
+.tester-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tester-chips button {
+  padding: 6px 10px;
+  border: 1px solid var(--field-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  font: 12.5px ui-monospace, "Cascadia Mono", monospace;
+  cursor: pointer;
+}
+.tester-chips button:active { background: var(--pressed); }
+.tester-log { margin: 0; padding: 0; list-style: none; max-height: 24vh; overflow-y: auto; font-size: 12.5px; }
+.tester-log:empty { display: none; }
+.tester-log li { display: flex; gap: 8px; align-items: baseline; padding: 5px 2px; border-top: 1px solid var(--field-border); }
+.tester-log code { font-family: ui-monospace, "Cascadia Mono", monospace; font-weight: 700; overflow-wrap: anywhere; }
+.tester-log .when { color: var(--muted); font-variant-numeric: tabular-nums; }
+.tester-log .result { margin-left: auto; text-align: right; color: var(--muted); }
+.tester-log li[data-state="sent"] .result { color: var(--ok); }
+.tester-log li[data-state="failed"] .result { color: var(--danger); }
+.segmented.has-tester span { padding: 7px 9px; }
+
 .recovery {
   padding: 10px 12px;
   border: 1px solid var(--danger);

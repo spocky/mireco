@@ -70,3 +70,8 @@ Repeat with Gboard, SwiftKey and Samsung Keyboard where available.
 - [ ] `docker compose up -d --build` on a NAS/Raspberry Pi; container restarts after reboot.
 - [ ] `deploy/install-windows-task.ps1`: serves after a reboot without logging in; `-Remove` cleans up.
 - [ ] `deploy/mireco.service` on Linux: starts at boot.
+
+## 8. Key tester (hidden)
+- [ ] 8 quick taps on "Type on TV" reveal *Key tester*; 7 taps, or taps with a pause, don't.
+- [ ] Try `wakeup`, `sleep`, `del`/`delete`/`backspace`, `mute`, `source`/`input`, `KEYCODE_WAKEUP`, `224` and `67` and note what each does on the TV (model + GiTV version).
+- [ ] With the TV in standby, check whether `wakeup` or `power` wakes it.

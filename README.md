@@ -237,7 +237,7 @@ Code layout (native ES modules, no framework):
 | `js/text-encoding.js` | Text → key events (code points, `\n` → `enter`, unsupported characters) |
 | `js/text-input.js` | Word buffering / composition handling for the text field |
 | `js/text-sender.js` | Committed text → queued commands |
-| `js/keyboard-panel.js` | Keyboard sheet UI |
+| `js/keyboard-panel.js`, `js/key-tester.js` | Keyboard sheet UI and the hidden key tester |
 | `js/settings.js` | Settings (localStorage, cookie migration) |
 | `js/settings-panel.js` | Settings screen: draft/save/cancel, shortcut slots, app picker |
 | `js/apps.js`, `js/app-icons.js` | App/HDMI catalog, icon choices, icon rendering |
@@ -256,6 +256,9 @@ Hardware-dependent behaviour is listed in [docs/manual-testing.md](docs/manual-t
 * The TV's replies can't be read (no CORS headers), so success of individual commands can't be confirmed.
 * Typing: which characters GiTV accepts in `keycode` beyond plain ASCII letters, digits and punctuation (space, symbols, accented letters) has not been verified on all firmwares. Already-sent text can't be corrected (no verified delete key).
 * IPv6 device addresses aren't supported.
+
+### Key tester (hidden)
+To find keys your device understands beyond the documented ones, open the keyboard panel and tap its **Type on TV** title 8 times in a row. The taps must be quick: a pause of more than a second starts the count again. A third option, **Key tester**, appears next to Compose & Send. In that mode, whatever you enter is sent as-is as one `keyevent&keycode=<name>` request. There are also chips for common guesses (`wakeup`, `sleep`, `mute`, `del`, `backspace`, `source`, `KEYCODE_WAKEUP`, `224`, …). A log lists each key and whether the TV answered. The TV answers even for keys it ignores, so watch the screen to see what a key does. The mode is never saved: it's hidden again after a reload, or after another 8 taps. If you find keys that work, please add them to the API notes below with your device model and firmware.
 
 ## GiTV http API features/"documentation"
 Here are a few commands that work fine on my hardware

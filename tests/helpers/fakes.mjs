@@ -50,8 +50,56 @@ export class FakeElement extends EventTarget {
     this.dataset = {};
     this.attributes = new Map();
     this.children = [];
+    this.parent = null;
     this.inert = false;
+    this.className = "";
+    const el = this;
+    this.classList = {
+      add: (c) => el.#setClass(c, true),
+      remove: (c) => el.#setClass(c, false),
+      toggle: (c, force) => el.#setClass(c, force ?? !el.classList.contains(c)),
+      contains: (c) => el.className.split(/\s+/).includes(c),
+    };
   }
+  #setClass(name, on) {
+    const set = new Set(this.className.split(/\s+/).filter(Boolean));
+    if (on) set.add(name);
+    else set.delete(name);
+    this.className = [...set].join(" ");
+    return on;
+  }
+  append(...nodes) {
+    for (const n of nodes) {
+      n.parent = this;
+      this.children.push(n);
+    }
+  }
+  prepend(...nodes) {
+    for (const n of nodes) n.parent = this;
+    this.children.unshift(...nodes);
+  }
+  replaceChildren(...nodes) {
+    this.children = [];
+    this.append(...nodes);
+  }
+  remove() {
+    if (this.parent) this.parent.children = this.parent.children.filter((c) => c !== this);
+    this.parent = null;
+  }
+  get lastElementChild() {
+    return this.children.at(-1) ?? null;
+  }
+  /** Supports ".class" selectors only (searches descendants). */
+  querySelector(selector) {
+    const cls = /^\.([\w-]+)$/.exec(selector)?.[1];
+    for (const child of this.children) {
+      if (cls && child.classList.contains(cls)) return child;
+      const found = child.querySelector(selector);
+      if (found) return found;
+    }
+    return null;
+  }
+  select() {}
   setAttribute(name, value) {
     this.attributes.set(name, String(value));
   }
@@ -184,6 +232,9 @@ export class FakeDocument {
   getElementById(id) {
     return this.elements.get(id) ?? null;
   }
+  createElement(tag) {
+    return new FakeElement(this, "", tag);
+  }
 }
 
 /** Builds the elements keyboard-panel.js expects. */
@@ -198,13 +249,22 @@ export function createPanelDom() {
   doc.getElementById("keyboardPanel").hidden = true;
   doc.getElementById("recovery").hidden = true;
   const panel = doc.getElementById("keyboardPanel");
-  for (const value of ["auto", "compose"]) {
+  for (const value of ["auto", "compose", "tester"]) {
     const radio = new FakeElement(doc, "mode-" + value, "input");
     radio.name = "textMode";
     radio.value = value;
     radio.checked = value === "auto";
     panel.children.push(radio);
   }
+  // Key tester (hidden mode)
+  const segmented = new FakeElement(doc, "", "div");
+  segmented.className = "segmented";
+  panel.append(segmented);
+  for (const id of ["keyboardTitle", "testerModeOption", "testerSend", "testerChips", "testerLog"]) {
+    doc.add(new FakeElement(doc, id, id === "testerSend" ? "button" : "div"));
+  }
+  doc.getElementById("testerModeOption").hidden = true;
+  doc.add(new FakeField(doc, "testerKey"));
   return doc;
 }
 

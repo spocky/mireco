@@ -140,7 +140,8 @@ document.addEventListener("click", (e) => {
 
 // While typing, pressing a remote button shouldn't close the soft keyboard.
 document.addEventListener("pointerdown", (e) => {
-  if (document.activeElement === keyboard.field && e.target.closest(".remote, .buttons, footer")) {
+  const typing = document.activeElement === keyboard.field || document.activeElement === keyboard.tester.input;
+  if (typing && e.target.closest(".remote, .buttons, footer")) {
     e.preventDefault();
   }
 });

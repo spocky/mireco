@@ -115,6 +115,7 @@
       <div class="segmented" role="radiogroup" aria-label="Transmission mode">
         <label><input type="radio" name="textMode" value="auto" checked><span>Auto words</span></label>
         <label><input type="radio" name="textMode" value="compose"><span>Compose &amp; Send</span></label>
+        <label id="testerModeOption" hidden><input type="radio" name="textMode" value="tester"><span>Key tester</span></label>
       </div>
       <button type="button" id="keyboardClose" class="icon-btn small" aria-label="Close keyboard">
         <svg class="icon"><use href="#i-close"/></svg>
@@ -122,6 +123,15 @@
     </div>
     <p id="modeHint" class="hint"></p>
     <textarea id="textEntry" rows="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" aria-label="Text to send" aria-describedby="modeHint textStatus" placeholder="Type here…"></textarea>
+    <!-- Hidden diagnostic: unlocked by tapping the "Type on TV" title 8 times. -->
+    <div id="keyTester" class="key-tester">
+      <div class="tester-row">
+        <input type="text" id="testerKey" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="Key name, e.g. wakeup" aria-label="Key name to send" aria-describedby="modeHint">
+        <button type="button" id="testerSend" class="primary-btn"><svg class="icon"><use href="#i-send"/></svg>Send key</button>
+      </div>
+      <div id="testerChips" class="tester-chips" role="group" aria-label="Keys to try"></div>
+      <ol id="testerLog" class="tester-log" aria-live="polite" aria-label="Sent keys"></ol>
+    </div>
     <div id="recovery" class="recovery" role="alert" hidden>
       <p id="recoveryText"></p>
       <div class="row">
