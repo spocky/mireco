@@ -186,7 +186,7 @@ export function explainFailure({ error, pageKind, permissionState, host, address
     return `The browser blocked or couldn't complete the request to http://${target}. From an HTTPS development page this may be mixed-content blocking (a LAN HTTPS origin doesn't go through the same Local Network Access flow as GitHub Pages), or the TV may be unreachable. Check the IP address and that the TV is on.`;
   }
   if (pageKind === "https-public" && permissionState === "unsupported") {
-    return `The browser blocked the request to http://${target}. HTTPS pages can only reach an http:// TV in browsers with Local Network Access support (current Chrome or Edge on Android/desktop). Use one of those, or run MiReCo from a local HTTP server (see README).`;
+    return `The browser blocked the request to http://${target}. HTTPS pages can only reach an http:// TV in browsers with Local Network Access support (current Chrome or Edge on Android/desktop). Use one of those, or open MiReCo's HTTP version from your own network (on iPhone, Safari and Firefox this is the only option; see README → HTTP version).`;
   }
   if (permissionState === "prompt") {
     return `Couldn't reach ${target}. If the browser asks to access devices on your local network, choose Allow. Otherwise check the IP address and that the phone and TV are on the same Wi-Fi.`;

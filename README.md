@@ -1,11 +1,6 @@
-# MiReCo
-Xiaomi GiTV Remote Control
+# MiReCo - Xiaomi GiTV Remote Control
 
-## Description
-This is a simple web based remote control for MIUI TV (Xiaomi with chinese interface) based android devices :
-- Mi Box
-- Mi Tv
-- Mi Projectors
+Simple web based remote control for MIUI TV based android devices such as Mi Box, Mi Tv, Mi Projectors...
 
 No need to install anything special on your controlled device, this website/webapp communicates with the GiTV internal web server to send events to your device.
 
@@ -17,20 +12,6 @@ Depending on your device, you'll need to have one the the 2 services enabled for
 - com.duokan.airkan.tvbox (AirkanTvService)
 - com.xiaomi.mitv.remotecontroller.service (RemoteControllerService)
 So if you have disabled "bloatware" (using "pm uninstall ...." for example), please make sure these services are still installed/enabled.
-
-## Browser compatibility
-
-The page is meant to be served over **HTTPS** (for example GitHub Pages) while the TV's API is plain **HTTP** on the LAN (`http://TV_IP:6095`). Browsers normally block that as *mixed content*. Chromium's [Local Network Access](https://developer.chrome.com/blog/local-network-access) (LNA) feature is what makes it work: the browser asks once for permission to reach devices on your local network, and once granted it allows requests to private IP addresses and `.local` names even from HTTPS pages.
-
-| Browser | HTTPS page (GitHub Pages) | Local/LAN HTTP page |
-|---|---|---|
-| Chrome for Android, Chrome/Edge desktop **142+** | ✅ after you allow "local network access" | ✅ |
-| Firefox, Safari / any iOS browser, older Chrome | ❌ blocked as mixed content | ✅ (see [preview](#local-and-lan-preview)) |
-
-Chrome on Android is the primary target. The settings screen (⋮ → *How this page reaches your TV*) shows how the current page is served and the current LNA permission state.
-
-### Why the old "host it on HTTP" advice no longer applies everywhere
-The original MiReCo had to be served over plain HTTP (`http://mireco.hopto.org`) to avoid mixed-content blocking. Current Chrome and Edge now apply Local Network Access to *insecure public* sites too, and such sites can't be granted the permission at all, so a public HTTP copy is blocked. The two configurations that work today are: **HTTPS + an LNA-capable browser**, or **a copy served from your own network** (localhost or a LAN IP over HTTP).
 
 ## Usage
 * Open the site on your phone (your GitHub Pages URL, see [deployment](#deploying-to-github-pages)).
@@ -50,7 +31,7 @@ The original MiReCo had to be served over plain HTTP (`http://mireco.hopto.org`)
 ### Shortcut buttons
 Settings → *Shortcut buttons* shows the four buttons where they sit on the remote (two left and two right of the volume keys). Tap one to open the app picker:
 
-* **Popular apps**: YouTube, YouTube Kids, YouTube Music, SmartTube, Netflix, Prime Video, Disney+, Max, Apple TV, Paramount+, Crunchyroll, DAZN, Pluto TV, Twitch, Plex, Kodi, VLC, Spotify, Play Store and two launchers. Each one comes with its own colored icon and its usual Android TV package name. The search box filters by app or package name.
+* **Popular apps**: YouTube, YouTube Kids, YouTube Music, SmartTube, Netflix, Prime Video, Disney+, Max, Apple TV, Paramount+, Crunchyroll, DAZN, Pluto TV, Twitch, Plex, Kodi, Stremio, VLC, Spotify, Play Store and two launchers. Each one comes with its own colored icon and its usual Android TV package name. The search box filters by app or package name.
 * **TV inputs**: HDMI 1–3.
 * **Other app**: type any package name, for example from the app's Play Store address (`id=…`), and choose an icon: automatic, one of eight generic icons (apps, movies, live TV, music, games, web, favorite, settings), or up to three letters.
 * **Remove button** hides the button on the remote.
@@ -109,6 +90,20 @@ Limitations of Auto words:
 * Once a word has been sent, the keyboard can no longer change it on the TV. If you backspace into text that was already sent, MiReCo tells you instead of guessing. Gboard's "undo autocorrect" or double-space-period after the ~0.7 s pause therefore only affect the field, not the TV. Use Compose & Send if you need full editing.
 * While you type continuously, the previous word is sent at the next short pause (MiReCo never modifies the field during an IME composition).
 
+## Browser compatibility
+
+The page is meant to be served over **HTTPS** (for example GitHub Pages) while the TV's API is plain **HTTP** on the LAN (`http://TV_IP:6095`). Browsers normally block that as *mixed content*. Chromium's [Local Network Access](https://developer.chrome.com/blog/local-network-access) (LNA) feature is what makes it work: the browser asks once for permission to reach devices on your local network, and once granted it allows requests to private IP addresses and `.local` names even from HTTPS pages.
+
+| Browser | HTTPS page (GitHub Pages) | Local/LAN HTTP page |
+|---|---|---|
+| Chrome for Android, Chrome/Edge desktop **142+** | ✅ after you allow "local network access" | ✅ |
+| Firefox, Safari / any iOS browser, older Chrome | ❌ blocked as mixed content | ✅ use the [HTTP version](#http-version-iphone-safari-firefox) |
+
+Chrome on Android is the primary target. The settings screen (⋮ → *How this page reaches your TV*) shows how the current page is served and the current LNA permission state.
+
+### Why the old "host it on HTTP" advice no longer applies everywhere
+The original MiReCo had to be served over plain HTTP (`http://mireco.hopto.org`) to avoid mixed-content blocking. Current Chrome and Edge now apply Local Network Access to *insecure public* sites too, and such sites can't be granted the permission at all, so a public HTTP copy is blocked. The two configurations that work today are: **HTTPS + an LNA-capable browser**, or **a copy served from your own network** (localhost or a LAN IP over HTTP).
+
 ## Local and LAN preview
 
 Requires Node.js 20+ (no runtime dependencies; `npm install` only creates the lockfile).
@@ -124,6 +119,8 @@ npm install
 | `npm run preview:https:lan` | `https://<PC-LAN-IP>:8443` | Closer-to-production HTTPS testing from the phone |
 | `npm run preview:https` | `https://localhost:8443` | HTTPS on the PC only |
 | `npm run mock-device` | `http://<PC>:6095` | Fake TV that prints the received keys/text |
+| `npm run build` | `dist/` | Deployable copy of the site (see [HTTP version](#http-version-iphone-safari-firefox)) |
+| `npm run serve:http` | `http://<PC-LAN-IP>:8080` | Builds and serves `dist/` over HTTP for everyday use on your network |
 
 The LAN commands print every LAN URL of the computer. Use a different port with e.g. `npm run preview:lan -- --port 9000`. The preview server only serves the site's files (no dotfiles, `certs/`, `scripts/`, `tests/`, `node_modules/` or package files) and sends `Cache-Control: no-store`. LAN preview is intended for trusted networks only.
 
@@ -170,6 +167,46 @@ The preview server prints it. Otherwise: Windows `ipconfig` (IPv4 address of the
 ### Testing without a TV
 `npm run mock-device` starts a fake GiTV API on port 6095 that logs every command and shows the text it "typed". Set MiReCo's device IP to `127.0.0.1` (page on the same PC) or to the PC's LAN IP (page on the phone). Use `-- --delay 300` to simulate a slow device.
 
+## HTTP version (iPhone, Safari, Firefox)
+
+iPhone and iPad browsers (all of them use Safari's engine), desktop Safari and Firefox don't support Local Network Access. They block the HTTPS site (GitHub Pages) from sending requests to the TV's `http://` address as mixed content, and there is no setting to allow it. In those browsers, MiReCo has to be loaded over plain **HTTP** from a machine on your own network. An HTTP page talking to an HTTP device on the same network isn't mixed content, and it works in every browser, including current Chrome.
+
+The site is plain static files, so any always-on device on your network can host it: a PC, a Raspberry Pi, a NAS, or a router that runs Docker or a web server. Only the phone's browser talks to the TV; the host just hands out the files.
+
+`npm run build` creates `dist/` with only the files the app needs. It leaves out scripts, tests, docs and package files, and it checks that every referenced asset and module is included. Pick one way to serve it:
+
+**A. Node.js (Windows, macOS, Linux):**
+```bash
+npm run serve:http
+```
+This rebuilds `dist/` and serves it on all interfaces at port 8080 (`npm run serve:http -- --port 9000` to change it). It prints the addresses to open on the phone. On Windows, allow it through the firewall the first time (see [Troubleshooting LAN preview](#troubleshooting-lan-preview)).
+
+**B. Docker (NAS, Raspberry Pi, home server):**
+```bash
+docker compose up -d --build
+```
+This uses `compose.yaml` and the `Dockerfile`: a Node stage runs the build, then the files are served by nginx (`deploy/nginx.conf`) on port 8080, and the container restarts automatically. Without Compose: `docker build -t mireco . && docker run -d -p 8080:80 --restart unless-stopped mireco`.
+
+**C. Start automatically on Linux (systemd):** clone the repository to `/opt/mireco` and run `node scripts/build.mjs`. Then install [`deploy/mireco.service`](deploy/mireco.service) (the steps are in the file). It runs the same Node server as a sandboxed service on port 8080.
+
+**D. Start automatically on Windows:** from an elevated PowerShell in the repository, run:
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\install-windows-task.ps1
+```
+This builds `dist/` and registers a scheduled task that serves it at startup (no window, even before you log in). It also adds a firewall rule for private networks. Add `-Port 9000` to change the port, and `-Remove` to undo everything.
+
+**E. Any web server you already have** (nginx, Apache, Caddy, IIS, a NAS's "Web Station"): copy the contents of `dist/` into a folder it serves over HTTP. A sub-folder works too, because all paths are relative. For a quick test with Python: `python3 -m http.server 8080 -d dist`.
+
+**On the iPhone:** open `http://<host-LAN-IP>:8080` in Safari, set the TV's IP in Settings, then use Share → **Add to Home Screen** to get a full-screen app icon. The address bar shows "Not Secure". That's expected for HTTP, and the page only contains the remote's static files.
+
+Notes:
+* Give the host a fixed LAN address (a DHCP reservation in your router) so the bookmark and home-screen icon keep working.
+* Keep it on your local network. Don't forward the port to the internet: it isn't needed, because the phone and TV must be on the same network anyway.
+* A public plain-HTTP site (like the original `http://mireco.hopto.org`) would also work on iPhone/Safari/Firefox, but not in current Chrome or Edge, which block insecure public pages from reaching local devices. GitHub Pages always redirects `github.io` to HTTPS, so it can't serve the HTTP version.
+* Updating: pull the new version, then run `npm run serve:http` (or `docker compose up -d --build`, or the Windows script) again.
+* When the HTTPS site is opened in a browser without Local Network Access, MiReCo says so at once and points to this section.
+* iOS hasn't been tested on a real device yet; see [docs/manual-testing.md](docs/manual-testing.md).
+
 ## Deploying to GitHub Pages
 The site is plain static files with relative paths, so it works from `https://USERNAME.github.io/REPOSITORY/` without a build step or workflow.
 
@@ -206,7 +243,8 @@ Code layout (native ES modules, no framework):
 | `js/apps.js`, `js/app-icons.js` | App/HDMI catalog, icon choices, icon rendering |
 | `js/themes.js`, `js/theme-boot.js` | Theme list/application; pre-paint theme loader |
 | `js/app.js` | Remote buttons, status messages, wiring |
-| `scripts/` | Preview server, certificate helper, mock device, syntax check |
+| `scripts/` | Preview/static server, build, certificate helper, mock device, syntax check |
+| `Dockerfile`, `compose.yaml`, `deploy/` | HTTP version hosting: Docker + nginx, systemd unit, Windows startup task |
 
 Hardware-dependent behaviour is listed in [docs/manual-testing.md](docs/manual-testing.md).
 
@@ -214,7 +252,7 @@ Hardware-dependent behaviour is listed in [docs/manual-testing.md](docs/manual-t
 * As explained above, shortcuts won't work to change to HDMI3 (at least it doesn't work on GiTV 1.3.97, hopefully it'll be fixed by Xiaomi)
 * "Vibrate on touch" setting won't work on iOs (until Apple adds support)
 * Power button will only work to power off. Powering On by HTML isn't supported. On my hardware (Mi Laser Projector), wake on lan doesn't work either. For now, I haven't been able to find out how official Mi Remote app wakes the device up (it might be using mDNS, but it's not discovered by standard Bonjour apps). Please contact me if you know how it works.
-* The HTTPS site needs a browser with Local Network Access support (Chrome/Edge 142+). Firefox, Safari and all iOS browsers block it as mixed content; use a locally hosted copy there.
+* The HTTPS site needs a browser with Local Network Access support (Chrome/Edge 142+). Firefox, Safari and all iOS browsers block it as mixed content; use the [HTTP version](#http-version-iphone-safari-firefox) there.
 * The TV's replies can't be read (no CORS headers), so success of individual commands can't be confirmed.
 * Typing: which characters GiTV accepts in `keycode` beyond plain ASCII letters, digits and punctuation (space, symbols, accented letters) has not been verified on all firmwares. Already-sent text can't be corrected (no verified delete key).
 * IPv6 device addresses aren't supported.

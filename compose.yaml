@@ -1,0 +1,10 @@
+# MiReCo HTTP version for your local network (see README).
+#   docker compose up -d --build
+# Then open http://<this-machine's-LAN-IP>:8080 on the phone.
+services:
+  mireco:
+    build: .
+    image: mireco:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped

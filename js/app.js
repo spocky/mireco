@@ -211,6 +211,9 @@ async function testConnection(parsed) {
   }
 }
 
+const UNSUPPORTED_HTTPS_HINT =
+  "This browser can't send commands to an http:// TV from an HTTPS page (no Local Network Access support: iPhone/iPad, Safari, Firefox, older Chrome). Use current Chrome or Edge, or open MiReCo's HTTP version hosted on your own network (see README → HTTP version).";
+
 function renderConnectionInfo() {
   $("pageContext").textContent = pageContext.summary;
   if (!localNetworkAccessApplies(pageContext.kind, device.ok ? device.addressSpace : "local")) {
@@ -223,9 +226,11 @@ function renderConnectionInfo() {
     prompt: "Local network access: not decided yet. Press Test connection and choose Allow when the browser asks.",
     denied: "Local network access: blocked for this site. Allow it in the browser's site settings, then reload.",
     unsupported: https
-      ? "This browser doesn't report a Local Network Access permission. Without it (Firefox, Safari, older Chrome), an HTTPS page usually can't reach an http:// TV. Use current Chrome or Edge, or a local server."
+      ? UNSUPPORTED_HTTPS_HINT
       : "This browser doesn't support Local Network Access permissions.",
   }[permission.state] || "";
+  // Make the explanation visible right away where it matters most.
+  if (https && permission.state === "unsupported") $("pageContext").closest("details").open = true;
   $("permissionInfo").textContent = text;
 }
 
@@ -275,5 +280,15 @@ if (window.visualViewport) {
 
 updateUI();
 renderConnectionInfo();
-refreshPermission();
+refreshPermission().then((state) => {
+  // Tell iPhone/Safari/Firefox users up front instead of after a failed press (once per session).
+  if (pageContext.kind !== "https-public" || state !== "unsupported") return;
+  try {
+    if (sessionStorage.getItem("mireco.lnaHintShown")) return;
+    sessionStorage.setItem("mireco.lnaHintShown", "1");
+  } catch {
+    // storage blocked: show it anyway
+  }
+  showStatus("This browser can't reach your TV from the HTTPS site. Use Chrome or Edge, or the HTTP version (see Settings).", "warn", 15000);
+});
 if (pageContext.kind === "http-public") showStatus(pageContext.summary, "warn", 12000);

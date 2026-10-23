@@ -3,10 +3,12 @@
 //
 //   node scripts/serve.mjs [--host 127.0.0.1] [--port 8080] [--https]
 //                          [--cert certs/dev-cert.pem] [--key certs/dev-key.pem]
+//                          [--root dist]
 //
 // Only the files GitHub Pages would serve for the app are exposed: dotfiles,
 // node_modules, certs, scripts, tests and package files are refused.
-// With --https the server never falls back to HTTP.
+// With --https the server never falls back to HTTP. --root serves another
+// folder, e.g. the output of `npm run build` for the HTTP version.
 
 import { createServer as createHttpServer } from "node:http";
 import { createServer as createHttpsServer } from "node:https";
@@ -16,6 +18,7 @@ import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+let siteRoot = ROOT;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -32,7 +35,7 @@ const MIME = {
 };
 
 // Top-level paths that are part of the repository but not of the site.
-const BLOCKED_TOP = new Set(["node_modules", "certs", "scripts", "tests", "package.json", "package-lock.json"]);
+const BLOCKED_TOP = new Set(["node_modules", "certs", "scripts", "tests", "deploy", "dist", "package.json", "package-lock.json"]);
 
 function parseArgs(argv) {
   const opts = {
@@ -41,6 +44,7 @@ function parseArgs(argv) {
     https: false,
     cert: process.env.MIRECO_CERT || join(ROOT, "certs", "dev-cert.pem"),
     key: process.env.MIRECO_KEY || join(ROOT, "certs", "dev-key.pem"),
+    root: ROOT,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -54,8 +58,9 @@ function parseArgs(argv) {
     else if (arg === "--https") opts.https = true;
     else if (arg === "--cert") opts.cert = resolve(next());
     else if (arg === "--key") opts.key = resolve(next());
+    else if (arg === "--root") opts.root = resolve(next());
     else if (arg === "--help" || arg === "-h") {
-      console.log("Usage: node scripts/serve.mjs [--host HOST] [--port PORT] [--https] [--cert FILE] [--key FILE]");
+      console.log("Usage: node scripts/serve.mjs [--host HOST] [--port PORT] [--https] [--cert FILE] [--key FILE] [--root DIR]");
       process.exit(0);
     } else fail(`Unknown option ${arg}`);
   }
@@ -98,7 +103,7 @@ function handler(req, res) {
     res.end(body);
   };
   if (req.method !== "GET" && req.method !== "HEAD") return send(405, "Method not allowed");
-  const file = resolveRequestPath(ROOT, req.url || "/");
+  const file = resolveRequestPath(siteRoot, req.url || "/");
   let size;
   try {
     if (!file) throw new Error();
@@ -139,6 +144,10 @@ function lanAddresses() {
 
 function main() {
   const opts = parseArgs(process.argv.slice(2));
+  if (!existsSync(join(opts.root, "index.html"))) {
+    fail(`No index.html in ${opts.root}. For the HTTP version, run "npm run build" first.`);
+  }
+  siteRoot = opts.root;
   const scheme = opts.https ? "https" : "http";
   let server;
   if (opts.https) {
@@ -162,7 +171,7 @@ function main() {
   });
 
   server.listen(opts.port, opts.host, () => {
-    console.log(`\nMiReCo preview (${scheme.toUpperCase()}) serving ${ROOT}\n`);
+    console.log(`\nMiReCo ${siteRoot === ROOT ? "preview" : "server"} (${scheme.toUpperCase()}) serving ${siteRoot}\n`);
     const allInterfaces = opts.host === "0.0.0.0" || opts.host === "::";
     if (allInterfaces || opts.host === "127.0.0.1" || opts.host === "localhost") {
       console.log(`  This computer:  ${scheme}://localhost:${opts.port}/`);

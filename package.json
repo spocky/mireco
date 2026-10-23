@@ -13,6 +13,8 @@
     "preview:lan": "node scripts/serve.mjs --host 0.0.0.0 --port 8080",
     "preview:https": "node scripts/serve.mjs --https --host 127.0.0.1 --port 8443",
     "preview:https:lan": "node scripts/serve.mjs --https --host 0.0.0.0 --port 8443",
+    "build": "node scripts/build.mjs",
+    "serve:http": "node scripts/build.mjs && node scripts/serve.mjs --root dist --host 0.0.0.0 --port 8080",
     "certs": "node scripts/make-cert.mjs",
     "mock-device": "node scripts/mock-device.mjs",
     "check": "node scripts/check.mjs",

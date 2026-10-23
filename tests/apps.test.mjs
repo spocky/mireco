@@ -27,6 +27,8 @@ test("existing defaults are recognised apps", () => {
   assert.equal(findApp("com.google.android.youtube.tv").name, "YouTube");
   assert.equal(findApp("com.spocky.projengmenu").name, "Projectivy Launcher");
   assert.equal(findApp("  com.netflix.ninja ").name, "Netflix");
+  assert.equal(findApp("com.stremio.one").name, "Stremio");
+  assert.equal(describeButton("com.stremio.one").icon.app.id, "stremio");
   assert.equal(findApp("com.unknown.app"), null);
 });
 

@@ -62,3 +62,11 @@ Repeat with Gboard, SwiftKey and Samsung Keyboard where available.
 - [ ] `npm run preview:lan` reachable from the phone (firewall rule / WSL notes as needed).
 - [ ] `npm run preview:https:lan` with an mkcert certificate trusted on the phone; refuses to start without certificate files.
 - [ ] `npm run mock-device`: typed text shows up correctly.
+
+## 7. HTTP version (iPhone / Safari / Firefox)
+- [ ] `npm run serve:http` on a PC: iPhone Safari opens `http://<PC-IP>:8080`, buttons and typing work on the TV.
+- [ ] Add to Home Screen on iOS: opens full screen and keeps settings.
+- [ ] HTTPS site in iPhone Safari: the "can't reach your TV from the HTTPS site" hint appears on load, and Settings explains the HTTP version.
+- [ ] `docker compose up -d --build` on a NAS/Raspberry Pi; container restarts after reboot.
+- [ ] `deploy/install-windows-task.ps1`: serves after a reboot without logging in; `-Remove` cleans up.
+- [ ] `deploy/mireco.service` on Linux: starts at boot.

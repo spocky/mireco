@@ -15,3 +15,6 @@ certs/
 Thumbs.db
 .vscode/
 .idea/
+
+# Output of npm run build (the HTTP version)
+dist/
