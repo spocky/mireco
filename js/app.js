@@ -3,10 +3,13 @@
 
 import { parseDeviceAddress } from "./address.js";
 import { renderIcon } from "./app-icons.js";
+import { createArrangeMode, parseDockOrder } from "./arrange.js";
 import { describeButton } from "./apps.js";
 import { controllerUrl, customButtonParams, homeParams, keyEventParams, probeUrl } from "./commands.js";
 import { CommandQueue } from "./command-queue.js";
+import { createDeviceSetup, IP_PREFIX } from "./device-setup.js";
 import { createKeyboardPanel } from "./keyboard-panel.js";
+import { createInstallBanner } from "./install-banner.js";
 import { createSettingsPanel } from "./settings-panel.js";
 import { createSettingsStore } from "./settings.js";
 import { applyTheme } from "./themes.js";
@@ -19,6 +22,12 @@ import {
 } from "./transport.js";
 
 const $ = (id) => document.getElementById(id);
+
+createInstallBanner({
+  banner: $("installBanner"),
+  button: $("installButton"),
+  hint: $("installHint"),
+});
 
 const settings = createSettingsStore();
 settings.load();
@@ -81,10 +90,10 @@ function hideStatus() {
 
 // ---------- Remote buttons ----------
 
-function vibrate() {
+function vibrate(ms = 50) {
   if (!settings.get("enableVibrator")) return;
   try {
-    navigator.vibrate?.(50);
+    navigator.vibrate?.(ms);
   } catch {
     // not supported (iOS)
   }
@@ -128,6 +137,11 @@ queue.subscribe((event) => {
 document.addEventListener("click", (e) => {
   const button = e.target.closest("button[data-key], button[data-app], button[data-action]");
   if (!button || button.closest("#settings")) return;
+  // Arranging (or a long-press that just started it) never sends commands.
+  if (arrange.shouldSuppressClick()) {
+    e.preventDefault();
+    return;
+  }
   if (button.dataset.key) {
     sendRemote(keyEventParams(button.dataset.key), button.dataset.key);
   } else if (button.dataset.app) {
@@ -176,6 +190,40 @@ const settingsPanel = createSettingsPanel({
   onSave: saveSettings,
   testConnection,
   refreshConnectionInfo: renderConnectionInfo,
+  onArrange: () => arrange.enter(),
+});
+
+// ---------- Arrange mode (drag to reorder bottom bar and shortcuts) ----------
+
+const arrange = createArrangeMode({
+  doc: document,
+  settings,
+  renderRemote,
+  onEnter: () => {
+    keyboard.close({ restoreFocus: false });
+    settingsPanel.close();
+  },
+  onApply: (patch) => {
+    if (!settings.update(patch)) showStatus("This browser blocked storage; the new layout will be lost when the page closes.", "warn");
+  },
+  vibrate: (ms) => vibrate(ms),
+  describeSlot: (n, slot) => describeButton(slot.value, slot.icon)?.name ?? "empty",
+});
+
+// ---------- First-run setup (no usable TV address stored yet) ----------
+
+const deviceSetup = createDeviceSetup({
+  dialog: $("deviceSetup"),
+  input: $("setupIP"),
+  error: $("setupIPError"),
+  okButton: $("setupOK"),
+  laterButton: $("setupLater"),
+  initialValue: settings.get("deviceIP") || IP_PREFIX,
+  background: [".topbar", ".remote-area", "footer", "#keyboardPanel"].map((selector) => document.querySelector(selector)),
+  onSubmit: (parsed) => {
+    saveSettings({ deviceIP: parsed.host });
+    showStatus(`TV address set to ${parsed.host}. Press a button to try it.`, "info");
+  },
 });
 
 function saveSettings(patch) {
@@ -237,14 +285,27 @@ function renderConnectionInfo() {
 
 // ---------- Appearance ----------
 
-function updateUI() {
+/** Shortcut buttons and bottom-bar order. While arranging, empty shortcut places show as placeholders. */
+function renderRemote(values, { arranging = false } = {}) {
   for (let i = 1; i <= 4; i++) {
-    const info = describeButton(settings.get("customPackage" + i), settings.get("customIcon" + i));
+    const info = describeButton(values["customPackage" + i], values["customIcon" + i]);
     const button = $("customButton" + i);
-    button.parentNode.style.display = info ? "flex" : "none";
-    if (info) renderIcon(button, info.icon);
-    button.setAttribute("aria-label", info ? info.action : `Shortcut ${i}`);
+    button.parentNode.style.display = info || arranging ? "flex" : "none";
+    renderIcon(button, info?.icon ?? null);
+    button.classList.toggle("placeholder", !info);
+    button.setAttribute("aria-label", info ? info.action : `Empty shortcut ${i}`);
   }
+  // Only touch the DOM when the order changed: moving an element drops its focus.
+  const dock = document.querySelector("footer ul");
+  const order = parseDockOrder(values.dockOrder);
+  const current = [...dock.children].map((li) => li.querySelector("[data-dock]").dataset.dock);
+  if (current.join() !== order.join()) {
+    for (const key of order) dock.append(dock.querySelector(`[data-dock="${key}"]`).parentNode);
+  }
+}
+
+function updateUI() {
+  renderRemote(settings.all(), { arranging: arrange.active });
   const themeColor = applyTheme(document.documentElement, settings.get("theme"), {
     bgColor: settings.get("bgColor"),
     btColor: settings.get("btColor"),
@@ -293,3 +354,6 @@ refreshPermission().then((state) => {
   showStatus("This browser can't reach your TV from the HTTPS site. Use Chrome or Edge, or the HTTP version (see Settings).", "warn", 15000);
 });
 if (pageContext.kind === "http-public") showStatus(pageContext.summary, "warn", 12000);
+
+// First use (or a stored address that no longer parses): ask for the TV's IP.
+if (!device.ok) deviceSetup.open();

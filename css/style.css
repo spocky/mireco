@@ -562,6 +562,119 @@ footer li { flex: 1 1 0; display: flex; align-items: center; justify-content: ce
 footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
 
 /* =========================================================================
+   Arrange mode (drag to reorder bottom bar and shortcuts)
+   ========================================================================= */
+
+/* Long-press must not select text, open the callout menu or start a pan. */
+[data-arrange] { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.arranging [data-arrange] { cursor: grab; animation: wiggle 260ms ease-in-out infinite alternate; }
+.arranging li:nth-child(even) [data-arrange] { animation-delay: -130ms; } /* out of phase with neighbours */
+.arranging [data-arrange].dragging {
+  position: relative;
+  z-index: 5;
+  animation: none;
+  cursor: grabbing;
+  transition: none;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+  scale: 1.08;
+}
+.arranging [data-arrange].drop-target { outline: 2px dashed var(--accent); outline-offset: 5px; }
+.arranging .remote, .arranging .vol, .arranging .topbar { opacity: 0.3; filter: saturate(0.4); transition: opacity 200ms ease; }
+.arranging footer .icon-btn { background-color: var(--hover); }
+.tile.placeholder {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  border: 2px dashed color-mix(in srgb, var(--fg) 35%, transparent);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+@keyframes wiggle { from { rotate: -1.8deg; } to { rotate: 1.8deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .arranging [data-arrange] { animation: none; }
+}
+
+.arrange-bar {
+  position: fixed;
+  top: calc(8px + var(--safe-top));
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(100% - 20px, 560px);
+  padding: 6px 6px 6px 16px;
+  transform: translateX(-50%);
+  border: 1px solid var(--sheet-border);
+  border-radius: 999px;
+  background: var(--sheet-bg);
+  color: var(--fg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  animation: fade-in 150ms ease-out;
+}
+.arrange-hint { flex: 1; margin: 0; font-size: 13px; line-height: 1.3; }
+.arrange-bar .text-btn, .arrange-bar .primary-btn { min-height: 40px; padding: 0 14px; }
+.arrange-btn { margin-top: 10px; }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* =========================================================================
+   First-run setup (no TV address stored yet)
+   ========================================================================= */
+
+.setup {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px + var(--safe-top)) calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left));
+  background: rgba(0, 0, 0, 0.55);
+}
+.setup[hidden] { display: none; }
+.setup-card {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 380px);
+  padding: 20px;
+  border: 1px solid var(--sheet-border);
+  border-radius: 24px;
+  background: var(--sheet-bg);
+  color: var(--fg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  animation: fade-in 150ms ease-out;
+}
+.setup-card h2 { margin: 0 0 6px; font-size: 18px; line-height: 1.3; }
+.setup-hint { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.setup-card input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 14px;
+  background: var(--field-bg);
+  color: var(--fg);
+  font: 17px var(--font);
+}
+.setup-card input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.setup-card input[aria-invalid="true"] { border-color: var(--danger); }
+.setup-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.setup-actions .text-btn { color: var(--fg); border-color: var(--field-border); }
+.setup-actions .text-btn:active { background-color: var(--pressed); }
+
+/* =========================================================================
    Keyboard sheet
    ========================================================================= */
 
@@ -604,8 +717,24 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
   .settings { transition: none !important; }
   body { transition: none; }
 }
-.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .sheet h2 { margin: 0; font-size: 16px; font-weight: 700; white-space: nowrap; }
+/* Title and its caveat stay together and share a centre line. */
+.sheet-title { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+/* Caveat for typing: which keys the firmware accepts varies by device. */
+.sheet-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  color: var(--warn);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
 .segmented {
   display: flex;
   margin-left: auto;
@@ -812,6 +941,18 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
   color: var(--input-fg);
   font: 16px var(--font);
 }
+.settings select {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--input-fg);
+  font: 15px var(--font);
+}
+.settings select:focus { outline: none; border-color: var(--overlay-accent); }
 .settings input:focus { outline: none; border-color: var(--overlay-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--overlay-accent) 22%, transparent); }
 .settings input[aria-invalid="true"] { border-color: var(--danger); }
 #deviceIP, #pickerPackage { font-family: ui-monospace, "Cascadia Mono", monospace; }
@@ -982,6 +1123,35 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
 .picker-foot { padding: 8px 16px calc(10px + var(--safe-bottom)); border-top: 1px solid var(--overlay-border); }
 .text-btn.danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
 .settings-scroll > small { display: block; margin: 8px 4px 16px; font-style: italic; color: var(--overlay-muted); }
+.install-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--overlay-accent) 35%, var(--overlay-border));
+  border-left: 4px solid var(--overlay-accent);
+  border-radius: 20px;
+  background: linear-gradient(120deg,
+    color-mix(in srgb, var(--overlay-accent) 12%, var(--overlay-card-solid)),
+    color-mix(in srgb, var(--overlay-accent) 5%, var(--overlay-card-solid)));
+  color: var(--overlay-fg);
+}
+.install-banner[hidden] { display: none; }
+.install-banner-icon {
+  display: inline-flex;
+  flex: none;
+  padding: 8px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--overlay-accent) 16%, var(--overlay-card-solid));
+  color: var(--overlay-accent);
+}
+.install-banner-content { min-width: 0; }
+.install-banner h3 { margin: 0 0 6px; font-size: 15px; line-height: 1.4; }
+.install-banner p { margin: 0; font-size: 13px; line-height: 1.5; }
+.settings .install-banner .primary-btn { grid-column: 1 / -1; justify-self: center; }
+.install-banner .primary-btn[hidden] { display: none; }
 .sig { display: block; margin-top: 0.5rem; text-align: right; }
 .sig a { color: inherit; text-decoration: underline; }
 
@@ -1070,7 +1240,7 @@ footer .icon-btn { font-size: var(--dock-icon); min-width: 56px; }
 
 @media (max-width: 420px) {
   .sheet-head { flex-wrap: wrap; }
-  .sheet-head h2 { flex: 1 1 auto; }
+  .sheet-title { flex: 1 1 auto; }
   .segmented { order: 3; flex: 1 1 100%; margin-left: 0; }
   .segmented label { flex: 1 1 0; text-align: center; }
   .text-status { flex-basis: 100%; }

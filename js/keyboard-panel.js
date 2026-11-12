@@ -4,7 +4,8 @@
 import { createKeyTester } from "./key-tester.js";
 import { TextInputController, completedPrefixLength } from "./text-input.js";
 import { createTextSender } from "./text-sender.js";
-import { tokensToText } from "./text-encoding.js";
+import { deleteKeycode, tokensToText } from "./text-encoding.js";
+import { controllerUrl, keyEventParams } from "./commands.js";
 
 const MODE_HINTS = {
   auto: "Auto words: each word is sent after you finish it with a space or Enter, so suggestions and autocorrect can still change it. Press Send for the last word. Words already sent can't be corrected.",
@@ -40,6 +41,7 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   const sendButton = $("textSend");
   const clearButton = $("textClear");
   const stopButton = $("textStop");
+  const deleteButton = $("textDelete");
   const recovery = $("recovery");
   const recoveryText = $("recoveryText");
   const modeInputs = [...panel.querySelectorAll('input[name="textMode"]')];
@@ -48,7 +50,12 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   const segmented = panel.querySelector(".segmented");
   const tester = createKeyTester({ doc, queue, getDevice, explainError, vibrate });
 
-  const commit = createTextSender({ queue, getDevice, getAllowNonAscii: () => settings.get("allowNonAscii") });
+  const commit = createTextSender({
+    queue,
+    getDevice,
+    getAllowNonAscii: () => settings.get("allowNonAscii"),
+    getKeyFormat: () => settings.get("textKeyFormat"),
+  });
   const controller = new TextInputController({ field, commit, mode: settings.get("textMode") });
 
   let lastError = null; // {message, tone}
@@ -58,6 +65,7 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   let testerMode = false; // never stored: the saved text mode stays auto/compose
   let taps = 0;
   let lastTap = -Infinity;
+  let deleteHandledThisKeystroke = false;
 
   function isOpen() {
     return !panel.hidden;
@@ -110,6 +118,44 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
     render();
   }
 
+  /** Delete key for the current key format, or null ("char" format has none). */
+  function tvDeleteKey() {
+    return deleteKeycode(settings.get("textKeyFormat"));
+  }
+
+  /** Deletes the character before the TV's cursor, after any text still queued. */
+  function sendDelete() {
+    const keycode = tvDeleteKey();
+    const device = getDevice();
+    if (!keycode) return false;
+    if (!device.ok) {
+      onNeedsDevice?.(device.error);
+      return false;
+    }
+    const queued = queue.enqueue({
+      kind: "text",
+      url: controllerUrl(device.host, keyEventParams(keycode)),
+      addressSpace: device.addressSpace,
+      token: { char: "", keycode, special: true, deletes: true },
+    });
+    if (!queued) setError("Too many keys waiting. Wait a moment.", "warn");
+    render();
+    return queued;
+  }
+
+  // Backspace with nothing before the cursor targets text already on the TV.
+  function onCommittedBackspace() {
+    if (deleteHandledThisKeystroke) return;
+    deleteHandledThisKeystroke = true;
+    setTimeout(() => (deleteHandledThisKeystroke = false), 0);
+    if (controller.mode === "auto" && tvDeleteKey()) {
+      lastError = null;
+      sendDelete();
+    } else {
+      setError("Text already sent to the TV can't be deleted or corrected from here. Use Compose & Send to edit text before it is sent, or an Android key format in Settings → Typing for a delete key.", "warn");
+    }
+  }
+
   function setError(message, tone = "error") {
     lastError = message ? { message, tone } : null;
     render();
@@ -149,6 +195,7 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
     status.textContent = text;
     status.dataset.state = state;
     stopButton.hidden = queue.countPending("text") === 0;
+    deleteButton.hidden = !tvDeleteKey();
     sendButton.disabled = draft.length === 0 || controller.flushPending;
     clearButton.disabled = draft.length === 0;
 
@@ -182,7 +229,7 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
         break;
       }
       case "edit-committed-attempt":
-        setError("Text already sent to the TV can't be deleted or corrected from here. Use Compose & Send to edit text before it is sent.", "warn");
+        onCommittedBackspace();
         break;
     }
     render();
@@ -201,7 +248,8 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
       // The failed key plus everything cancelled after it becomes recoverable
       // text. It is never resent automatically.
       const { command, cancelled, error } = event;
-      const failedChar = command.token?.char === "\n" ? "Enter" : `“${command.token?.char}”`;
+      const token = command.token ?? {};
+      const failedChar = token.deletes ? "Delete" : token.modifier ? "Shift" : token.char === "\n" ? "Enter" : `“${token.char}”`;
       setError("Sending stopped after an error. See below.", "error");
       explainError(error).then((message) => {
         addUnsent([command, ...cancelled], `Sending stopped: ${message} ${failedChar} may or may not have reached the TV.`);
@@ -225,7 +273,7 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
   });
 
   // Keep the soft keyboard open: don't let these buttons steal focus from the field.
-  for (const button of [sendButton, clearButton, stopButton]) {
+  for (const button of [sendButton, clearButton, stopButton, deleteButton]) {
     button.addEventListener("pointerdown", (e) => {
       if (doc.activeElement === field) e.preventDefault();
     });
@@ -237,6 +285,17 @@ export function createKeyboardPanel({ doc, queue, getDevice, settings, explainEr
     lastError = null;
     controller.flush();
     render();
+  });
+
+  deleteButton.addEventListener("click", () => {
+    vibrate();
+    sendDelete();
+  });
+
+  // Android keyboards send a plain Backspace key (no beforeinput) when the
+  // field is already empty.
+  field.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && field.selectionStart === 0 && field.selectionEnd === 0) onCommittedBackspace();
   });
 
   clearButton.addEventListener("click", () => {

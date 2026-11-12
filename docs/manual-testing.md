@@ -75,3 +75,24 @@ Repeat with Gboard, SwiftKey and Samsung Keyboard where available.
 - [ ] 8 quick taps on "Type on TV" reveal *Key tester*; 7 taps, or taps with a pause, don't.
 - [ ] Try `wakeup`, `sleep`, `del`/`delete`/`backspace`, `mute`, `source`/`input`, `KEYCODE_WAKEUP`, `224` and `67` and note what each does on the TV (model + GiTV version).
 - [ ] With the TV in standby, check whether `wakeup` or `power` wakes it.
+
+## 9. Rearranging buttons
+- [ ] Long-press Home on Android Chrome: arrange mode starts with a short vibration, no command reaches the TV, and no text-selection or context menu appears.
+- [ ] Without lifting the finger, drag Home to the right end of the bar; Done keeps the order after a reload.
+- [ ] Drag a shortcut onto an empty place and onto another shortcut (swap); Cancel restores the previous layout.
+- [ ] A normal tap right after Done/Cancel works. A quick swipe across a button doesn't start arranging.
+- [ ] Settings → Arrange on the remote; the button is disabled while settings have unsaved changes.
+- [ ] iPhone Safari: long-press doesn't open the callout menu and dragging works.
+
+## 10. Letter formats (when typed letters don't appear)
+- [ ] With a TV text box focused, use the key tester chips `a`, `A`, `KEYCODE_A`, `29`, `KEYCODE_SPACE` and `62`, and note which ones type something.
+- [ ] Select the working format in Settings → Typing, then type a sentence with capitals, digits and punctuation in each mode.
+- [ ] Shift: do `Hi!` and `?` come out capitalised/shifted, or as `hi1` and `/`?
+- [ ] Delete: the panel's Delete button, and Backspace on an empty field in Auto words mode, remove the last character on the TV.
+- [ ] Number format: digits 0–9 (sent as `7`–`16`) type the right digits.
+
+## 11. First-run setup (no saved IP)
+- [ ] With no stored IP (fresh profile, or clear the site's storage), a dialog asks for the TV's IP with `192.168.1.` prefilled and OK disabled.
+- [ ] Completing the last part of a valid address enables OK; OK stores it, closes the dialog and the remote works. Reloading doesn't show the dialog again.
+- [ ] An invalid or public address keeps OK disabled; Enter explains why without closing. Escape and *Set up later* dismiss without saving.
+- [ ] `…/#192.168.1.20` skips the dialog, as does a stored IP. A stored but unusable IP shows the dialog with that value prefilled.

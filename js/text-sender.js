@@ -18,26 +18,28 @@ function listUnsupported(unsupported) {
  * @param {import("./command-queue.js").CommandQueue} deps.queue
  * @param {() => ({ok: true, host: string, addressSpace: string} | {ok: false, error: string})} deps.getDevice
  * @param {() => boolean} [deps.getAllowNonAscii]
+ * @param {() => "char"|"name"|"number"} [deps.getKeyFormat]
  * @returns {(text: string) => {accepted: boolean, code?: string, reason?: string, count?: number}}
  */
-export function createTextSender({ queue, getDevice, getAllowNonAscii = () => false }) {
+export function createTextSender({ queue, getDevice, getAllowNonAscii = () => false, getKeyFormat = () => "char" }) {
   return function commit(text) {
     const device = getDevice();
     if (!device.ok) return { accepted: false, code: "no-device", reason: device.error };
 
-    const { tokens, unsupported } = encodeText(text, { allowNonAscii: getAllowNonAscii() });
+    const keyFormat = getKeyFormat();
+    const { tokens, unsupported } = encodeText(text, { allowNonAscii: getAllowNonAscii(), keyFormat });
     if (unsupported.length) {
       return {
         accepted: false,
         code: "unsupported",
-        reason: `Can't type ${listUnsupported(unsupported)} on the TV. Remove ${unsupported.length === 1 ? "it" : "them"} to continue; this text hasn't been sent.`,
+        reason: `Can't type ${listUnsupported(unsupported)} on the TV${keyFormat === "char" ? "" : " with Android key codes"}. Remove ${unsupported.length === 1 ? "it" : "them"} to continue; this text hasn't been sent.`,
       };
     }
     if (tokens.length > MAX_TEXT_LENGTH) {
       return {
         accepted: false,
         code: "too-long",
-        reason: `That's ${tokens.length} characters; send at most ${MAX_TEXT_LENGTH} at a time.`,
+        reason: `That's ${tokens.length} keys; send at most ${MAX_TEXT_LENGTH} at a time.`,
       };
     }
     const commands = tokens.map((token) => ({

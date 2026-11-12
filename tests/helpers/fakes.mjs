@@ -189,6 +189,7 @@ export class FakeField extends FakeElement {
     const { selectionStart: s, selectionEnd: e } = this;
     if (s !== e) this.#replace(s, e, "");
     else if (s > 0) this.#replace(s - 1, s, "");
+    else return; // nothing deleted: browsers fire no input event
     this.dispatchEvent(makeEvent("input", { inputType: "deleteContentBackward", data: null, isComposing: false }));
   }
 
@@ -242,7 +243,7 @@ export function createPanelDom() {
   const doc = new FakeDocument();
   const ids = [
     "keyboardPanel", "keyboardButton", "keyboardBadge", "modeHint", "textStatus", "textSend",
-    "textClear", "textStop", "recovery", "recoveryText", "recoveryRestore", "recoveryDiscard", "keyboardClose",
+    "textClear", "textStop", "textDelete", "recovery", "recoveryText", "recoveryRestore", "recoveryDiscard", "keyboardClose",
   ];
   for (const id of ids) doc.add(new FakeElement(doc, id, id.startsWith("text") || id.startsWith("recoveryR") ? "button" : "div"));
   doc.add(new FakeField(doc, "textEntry"));

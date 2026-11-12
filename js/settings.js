@@ -7,6 +7,8 @@
 // then removed. If storage is unavailable (private mode, blocked), settings
 // still work for the current session.
 
+import { DEFAULT_DOCK_ORDER, parseDockOrder } from "./arrange.js";
+import { DEFAULT_KEY_FORMAT, isKeyFormat } from "./text-encoding.js";
 import { CLASSIC_THEME, DEFAULT_THEME, isTheme } from "./themes.js";
 
 export const DEFAULTS = Object.freeze({
@@ -23,12 +25,14 @@ export const DEFAULTS = Object.freeze({
   textMode: "auto", // "auto" (buffered words) | "compose" (Compose & Send)
   keyIntervalMs: 80, // gap between consecutive requests
   allowNonAscii: false, // experimental: send non-ASCII characters
+  textKeyFormat: DEFAULT_KEY_FORMAT, // how letters are sent: "char" | "name" | "number" (see text-encoding.js)
   theme: DEFAULT_THEME, // see js/themes.js
   // Icon per custom button: "" (automatic), "glyph:<id>" or "text:<chars>" (see js/apps.js).
   customIcon1: "",
   customIcon2: "",
   customIcon3: "",
   customIcon4: "",
+  dockOrder: DEFAULT_DOCK_ORDER, // bottom bar order, e.g. "back,home,menu"
 });
 
 const PREFIX = "mireco.";
@@ -115,6 +119,8 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
     // Existing users keep the original look until they pick a theme.
     if (anyStored && !themeStored) values.theme = CLASSIC_THEME;
     if (!isTheme(values.theme)) values.theme = DEFAULT_THEME;
+    values.dockOrder = parseDockOrder(values.dockOrder).join(",");
+    if (!isKeyFormat(values.textKeyFormat)) values.textKeyFormat = DEFAULT_KEY_FORMAT;
     return { ...values };
   }
 
@@ -142,6 +148,8 @@ export function createSettingsStore({ storage = safeLocalStorage(), doc = global
       }
       values.keyIntervalMs = clampInterval(values.keyIntervalMs);
       if (!isTheme(values.theme)) values.theme = DEFAULT_THEME;
+      values.dockOrder = parseDockOrder(values.dockOrder).join(",");
+      if (!isKeyFormat(values.textKeyFormat)) values.textKeyFormat = DEFAULT_KEY_FORMAT;
       return save();
     },
     get persistent() {

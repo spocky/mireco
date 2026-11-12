@@ -76,6 +76,14 @@
     </div>
   </header>
 
+  <!-- Arrange mode (long-press a shortcut or bottom-bar button) -->
+  <div id="arrangeBar" class="arrange-bar" role="toolbar" aria-label="Arrange buttons" hidden>
+    <p class="arrange-hint">Drag shortcuts and bottom-bar buttons to rearrange</p>
+    <button type="button" id="arrangeCancel" class="text-btn">Cancel</button>
+    <button type="button" id="arrangeDone" class="primary-btn">Done</button>
+  </div>
+  <p id="arrangeStatus" class="visually-hidden" aria-live="polite"></p>
+
   <main class="remote-area">
     <div class="remote" role="group" aria-label="Navigation">
       <button type="button" class="dpad up" data-key="up" aria-label="Up"><svg class="icon"><use href="#i-up"/></svg></button>
@@ -86,32 +94,50 @@
     </div>
     <div class="buttons">
       <ul class="cust">
-        <li><button type="button" class="icon-btn tile" id="customButton1" data-app="1" aria-label="Shortcut 1"></button></li>
-        <li><button type="button" class="icon-btn tile" id="customButton2" data-app="2" aria-label="Shortcut 2"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton1" data-app="1" data-arrange="slot" aria-label="Shortcut 1"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton2" data-app="2" data-arrange="slot" aria-label="Shortcut 2"></button></li>
       </ul>
       <ul class="vol">
         <li><button type="button" class="icon-btn tile" data-key="volumeup" aria-label="Volume up"><svg class="icon"><use href="#i-vol-up"/></svg></button></li>
         <li><button type="button" class="icon-btn tile" data-key="volumedown" aria-label="Volume down"><svg class="icon"><use href="#i-vol-down"/></svg></button></li>
       </ul>
       <ul class="cust">
-        <li><button type="button" class="icon-btn tile" id="customButton3" data-app="3" aria-label="Shortcut 3"></button></li>
-        <li><button type="button" class="icon-btn tile" id="customButton4" data-app="4" aria-label="Shortcut 4"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton3" data-app="3" data-arrange="slot" aria-label="Shortcut 3"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton4" data-app="4" data-arrange="slot" aria-label="Shortcut 4"></button></li>
       </ul>
     </div>
   </main>
 
   <footer>
     <ul>
-      <li class="home"><button type="button" class="icon-btn" data-action="home" aria-label="Home"><svg class="icon"><use href="#i-home"/></svg></button></li>
-      <li class="back"><button type="button" class="icon-btn" data-key="back" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></button></li>
-      <li class="menu"><button type="button" class="icon-btn" data-key="menu" aria-label="Menu"><svg class="icon"><use href="#i-menu"/></svg></button></li>
+      <li class="home"><button type="button" class="icon-btn" data-action="home" data-arrange="dock" data-dock="home" aria-label="Home"><svg class="icon"><use href="#i-home"/></svg></button></li>
+      <li class="back"><button type="button" class="icon-btn" data-key="back" data-arrange="dock" data-dock="back" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></button></li>
+      <li class="menu"><button type="button" class="icon-btn" data-key="menu" data-arrange="dock" data-dock="menu" aria-label="Menu"><svg class="icon"><use href="#i-menu"/></svg></button></li>
     </ul>
   </footer>
+
+  <!-- First-run setup: shown only when no usable TV address is stored. -->
+  <div id="deviceSetup" class="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle" aria-describedby="setupHint" hidden>
+    <div class="setup-card">
+      <h2 id="setupTitle">Connect to your Xiaomi box</h2>
+      <p id="setupHint" class="setup-hint">Enter the TV's IP address. You'll find it on the TV under Settings → Network.</p>
+      <label for="setupIP" class="field-label">TV IP address</label>
+      <input type="text" id="setupIP" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="192.168.1.20" aria-describedby="setupIPError">
+      <p id="setupIPError" class="field-error" hidden></p>
+      <div class="setup-actions">
+        <button type="button" id="setupLater" class="text-btn">Set up later</button>
+        <button type="button" id="setupOK" class="primary-btn" disabled>OK</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Text entry bottom sheet. Non-modal: the remote above stays usable. -->
   <section id="keyboardPanel" class="sheet" role="dialog" aria-labelledby="keyboardTitle" hidden>
     <div class="sheet-head">
-      <h2 id="keyboardTitle">Type on TV</h2>
+      <div class="sheet-title">
+        <h2 id="keyboardTitle">Type on TV</h2>
+        <span class="sheet-warning">Doesn't work on all devices!</span>
+      </div>
       <div class="segmented" role="radiogroup" aria-label="Transmission mode">
         <label><input type="radio" name="textMode" value="auto" checked><span>Auto words</span></label>
         <label><input type="radio" name="textMode" value="compose"><span>Compose &amp; Send</span></label>
@@ -142,7 +168,8 @@
     <div class="sheet-foot">
       <p id="textStatus" class="text-status" data-state="idle" aria-live="polite">Ready</p>
       <button type="button" id="textStop" class="text-btn" hidden><svg class="icon"><use href="#i-stop"/></svg>Stop</button>
-      <button type="button" id="textClear" class="text-btn" aria-label="Clear draft"><svg class="icon"><use href="#i-clear"/></svg>Clear</button>
+      <button type="button" id="textDelete" class="text-btn" aria-label="Delete the last character on the TV" hidden><svg class="icon"><use href="#i-clear"/></svg>Delete</button>
+      <button type="button" id="textClear" class="text-btn" aria-label="Clear draft"><svg class="icon"><use href="#i-delete"/></svg>Clear</button>
       <button type="button" id="textSend" class="primary-btn"><svg class="icon"><use href="#i-send"/></svg>Send</button>
     </div>
   </section>
@@ -173,6 +200,15 @@
         </details>
       </section>
 
+      <aside id="installBanner" class="install-banner" aria-labelledby="installTitle">
+        <span class="install-banner-icon" aria-hidden="true"><svg class="icon"><use href="#i-home"/></svg></span>
+        <div class="install-banner-content">
+          <h3 id="installTitle">Keep your remote one tap away</h3>
+          <p id="installHint">Add this page to your home screen from the browser menu to use it like an app.</p>
+        </div>
+        <button type="button" id="installButton" class="primary-btn" hidden>Install MiReCo</button>
+      </aside>
+
       <section class="card" aria-labelledby="secButtons">
         <div class="card-head">
           <span class="card-icon"><svg class="icon"><use href="#i-apps"/></svg></span>
@@ -189,6 +225,8 @@
           <span class="slot-text"><span class="slot-name">Home button</span><span class="slot-sub" id="homeRowValue"></span></span>
           <svg class="icon chevron"><use href="#i-chevron"/></svg>
         </button>
+        <button type="button" class="text-btn arrange-btn" id="arrangeFromSettings">Arrange on the remote</button>
+        <p class="field-hint" id="arrangeHint">Or long-press a shortcut or bottom-bar button on the remote, then drag.</p>
       </section>
 
       <section class="card" aria-labelledby="secLook">
@@ -221,14 +259,21 @@
         <label for="keyIntervalMs" class="field-label slider-label">Delay between keys <output id="keyIntervalValue" for="keyIntervalMs"></output></label>
         <input type="range" id="keyIntervalMs" min="0" max="1000" step="10" aria-describedby="keyIntervalHint">
         <p id="keyIntervalHint" class="field-hint">Raise it if the TV drops letters. 80 ms works for most devices.</p>
+        <label for="textKeyFormat" class="field-label">Letters are sent as</label>
+        <select id="textKeyFormat" aria-describedby="textKeyFormatHint">
+          <option value="char">Characters (a, b, c) · original GiTV</option>
+          <option value="name">Android key names (KEYCODE_A)</option>
+          <option value="number">Android key numbers (29)</option>
+        </select>
+        <p id="textKeyFormatHint" class="field-hint">If typed letters don't appear on your TV, try another format. Find the one that works with the hidden key tester (tap "Type on TV" 8 times). The Android formats add a delete key; capitals need the TV to honour Shift.</p>
         <label class="switch-row" for="allowNonAscii">
-          <span><span class="switch-title">Accented characters</span><span class="field-hint">Send á, ñ, ü… Experimental: untested on GiTV.</span></span>
+          <span><span class="switch-title">Accented characters</span><span class="field-hint">Send á, ñ, ü… (Characters format only). Experimental: untested on GiTV.</span></span>
           <input id="allowNonAscii" type="checkbox" class="switch" role="switch">
         </label>
       </section>
 
-      <small>Add this page to your home screen from the browser menu to use it like an app.
-        <span class="sig"><a href="https://github.com/spocky/mireco/" target="_blank" rel="noopener">MiReCo</a>, from Spocky with love <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=MH5HLMP8ED24N&amp;lc=GB&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank" rel="noopener">(buy me a drink)</a></span>
+      <small>
+        <span class="sig"><em><a href="https://github.com/bmpenuelas/mireco/" target="_blank" rel="noopener">MiReCo&nbsp;fork</a>, <a href="https://github.com/spocky/mireco/" target="_blank" rel="noopener">original</a> by Spocky <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=MH5HLMP8ED24N&amp;lc=GB&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank" rel="noopener">(buy him a drink)</a></em></span>
       </small>
     </div>
     <footer class="settings-actions">

@@ -41,8 +41,9 @@ export function changedKeys(current, saved) {
  * @param {(patch: object) => boolean} deps.onSave stores the patch; false if storage failed
  * @param {(parsed: object) => Promise<{tone: string, message: string}>} deps.testConnection
  * @param {() => void} deps.refreshConnectionInfo
+ * @param {() => void} [deps.onArrange] start arranging buttons on the remote
  */
-export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, testConnection, refreshConnectionInfo }) {
+export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, testConnection, refreshConnectionInfo, onArrange }) {
   const $ = (id) => doc.getElementById(id);
   const panel = $("settings");
   const openButton = $("settingsButton");
@@ -79,6 +80,7 @@ export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, te
     for (const picker of colorPickers.values()) picker.importColor?.();
     $("enableVibrator").checked = values.enableVibrator;
     $("allowNonAscii").checked = values.allowNonAscii;
+    $("textKeyFormat").value = values.textKeyFormat;
     slider.value = values.keyIntervalMs;
     for (const input of themeInputs) input.checked = input.value === values.theme;
     syncCustomColors(values.theme);
@@ -133,6 +135,7 @@ export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, te
       btColor: $("btColor").value.trim() || DEFAULTS.btColor,
       enableVibrator: $("enableVibrator").checked,
       allowNonAscii: $("allowNonAscii").checked,
+      textKeyFormat: $("textKeyFormat").value,
       keyIntervalMs: Number(slider.value),
       theme: themeInputs.find((i) => i.checked)?.value ?? settings.get("theme"),
     };
@@ -148,6 +151,11 @@ export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, te
     const dirty = changedKeys(patch, settings.all()).length > 0;
     dirtyChip.hidden = !dirty;
     saveButton.textContent = dirty ? "Save" : "Done";
+    // Arranging works on the saved layout, so unsaved edits must be settled first.
+    $("arrangeFromSettings").disabled = dirty;
+    $("arrangeHint").textContent = dirty
+      ? "Save or cancel your changes first to arrange buttons on the remote."
+      : "Or long-press a shortcut or bottom-bar button on the remote, then drag.";
   }
 
   function save() {
@@ -420,6 +428,11 @@ export function createSettingsPanel({ doc, settings, onOpen, onClose, onSave, te
   });
   $("pickerUseCustom").addEventListener("click", useCustom);
   $("pickerRemove").addEventListener("click", () => choose(""));
+  $("arrangeFromSettings").addEventListener("click", () => {
+    if (changedKeys(collect().patch, settings.all()).length) return;
+    close();
+    onArrange?.();
+  });
 
   for (const input of themeInputs) {
     input.addEventListener("change", () => {

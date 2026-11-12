@@ -14,8 +14,8 @@ Depending on your device, you'll need to have one the the 2 services enabled for
 So if you have disabled "bloatware" (using "pm uninstall ...." for example), please make sure these services are still installed/enabled.
 
 ## Usage
-* Open the site on your phone (your GitHub Pages URL, see [deployment](#deploying-to-github-pages)).
-* Open settings (⋮), enter your TV's IP address (TV settings → Network) and tap **Test connection**. When Chrome asks whether the site may access devices on your local network, choose **Allow**.
+* Open the site on your phone (your GitHub Pages URL, see [deployment](#deploying-to-github-pages)). The first time, MiReCo asks for the TV's IP address: `192.168.1.` is prefilled, **OK** only enables once the full address is valid, and later visits skip the popup. Change the IP any time in settings (⋮).
+* In settings, tap **Test connection**. When Chrome asks whether the site may access devices on your local network, choose **Allow**.
   * Only local addresses are accepted: `192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `169.254.x.x`, `127.x.x.x` / `localhost` (for the mock device), or a `.local` name.
   * "Test connection" can only tell you that *something answered* on port 6095. The TV's responses can't be read by the page (no CORS), so MiReCo never claims a command was executed — check the TV screen.
   * You can also pass the IP in the URL once: `https://…/mireco/#192.168.1.20`.
@@ -39,6 +39,17 @@ Settings → *Shortcut buttons* shows the four buttons where they sit on the rem
 *Home button* works the same way, with a choice of the TV home screen, a known launcher (Projectivy, FLauncher) or any other package.
 
 App icons are simple colored tiles drawn for MiReCo, not official logos. Package names can differ between regions and firmware builds; if a button doesn't open the app, enter its package under *Other app*.
+
+### Rearranging buttons
+Long-press any shortcut button or bottom-bar button (Home, Back, Menu), or tap Settings → *Shortcut buttons* → **Arrange on the remote**. The buttons start to wiggle and a Done/Cancel bar appears. Then:
+
+* **Bottom bar:** drag a button to another position; the others shift over.
+* **Shortcuts:** drag one onto another place to swap them. Empty places show as dashed outlines, so you can also move a shortcut to the other side of the volume keys.
+* You can keep your finger down after the long-press and drag straight away.
+* **Done** saves the layout; **Cancel** or Escape restores the previous one.
+* With a keyboard, focus a button and use the arrow keys.
+
+Nothing is sent to the TV while arranging, and the long-press that starts it doesn't press the button.
 
 The settings screen keeps your edits in a draft: **Save** stores them, **Cancel** (or ✕, or Escape on a keyboard) discards them, and an *Unsaved* chip shows when something changed.
 
@@ -85,6 +96,20 @@ Details and guarantees:
 * Line breaks (Enter in the text field) are sent as the `enter` key. Multiple spaces are kept. `&`, `+`, `#`, `%`, `?` etc. are percent-encoded and arrive as literal characters. Words that look like key names (`back`, `home`) are typed letter by letter, so they can't trigger navigation.
 * Supported by default: printable ASCII. Accented letters (`á`, `ñ`, …) can be enabled in settings as *experimental*; emoji, combining marks and control characters are always refused rather than silently dropped or replaced.
 * Closing the panel never discards anything: the draft stays (the keyboard icon shows a dot) and queued keys keep sending.
+
+**If letters don't appear on your TV:** the original GiTV firmware accepted the character itself (`keycode=a`), but many boxes and TVs ignore that while the named keys still work. Settings → Typing → *Letters are sent as* offers two alternatives that press Android keyboard keys instead:
+
+| Format | `a` | `A` | space | delete |
+|---|---|---|---|---|
+| Characters (default) | `a` | `A` | `%20` | none |
+| Android key names | `KEYCODE_A` | `KEYCODE_SHIFT_LEFT`, `KEYCODE_A` | `KEYCODE_SPACE` | `KEYCODE_DEL` |
+| Android key numbers | `29` | `59`, `29` | `62` | `67` |
+
+To find the right one, focus a text box on the TV, unlock the [key tester](#key-tester-hidden) and tap the `a`, `KEYCODE_A` and `29` chips. Notes on the Android formats:
+* Every printable ASCII character has a key. Capitals and shifted symbols (`!`, `?`, `:`…) are sent as Shift followed by the key, so they only come out capitalised or shifted if the TV honours that Shift press.
+* Line breaks are still sent as the named `enter` key. Non-ASCII characters can't be typed.
+* A **Delete** button appears in the keyboard panel. In Auto words mode, Backspace on your phone's keyboard with nothing left in the field deletes the character before the cursor on the TV, so mistakes can be corrected after all.
+* In the number format, the digits 0–2 are sent as `7`, `8` and `9`. A firmware that also accepts plain characters might type those literally.
 
 Limitations of Auto words:
 * Once a word has been sent, the keyboard can no longer change it on the TV. If you backspace into text that was already sent, MiReCo tells you instead of guessing. Gboard's "undo autocorrect" or double-space-period after the ~0.7 s pause therefore only affect the field, not the TV. Use Compose & Send if you need full editing.
@@ -165,7 +190,7 @@ The preview server prints it. Otherwise: Windows `ipconfig` (IPv4 address of the
 * **Diagnosing**: first open `http://localhost:8080` on the computer; then from the phone open `http://<PC-LAN-IP>:8080`. If the server logs nothing when the phone tries, the request isn't reaching the computer (firewall, isolation, WSL NAT, wrong IP). If the phone can open the site but the TV doesn't react, check the TV IP with **Test connection**.
 
 ### Testing without a TV
-`npm run mock-device` starts a fake GiTV API on port 6095 that logs every command and shows the text it "typed". Set MiReCo's device IP to `127.0.0.1` (page on the same PC) or to the PC's LAN IP (page on the phone). Use `-- --delay 300` to simulate a slow device.
+`npm run mock-device` starts a fake GiTV API on port 6095 that logs every command and shows the text it "typed" (for characters and for the Android key formats, including Shift and Delete). Set MiReCo's device IP to `127.0.0.1` (page on the same PC) or to the PC's LAN IP (page on the phone). Use `-- --delay 300` to simulate a slow device.
 
 ## HTTP version (iPhone, Safari, Firefox)
 
@@ -238,6 +263,8 @@ Code layout (native ES modules, no framework):
 | `js/text-input.js` | Word buffering / composition handling for the text field |
 | `js/text-sender.js` | Committed text → queued commands |
 | `js/keyboard-panel.js`, `js/key-tester.js` | Keyboard sheet UI and the hidden key tester |
+| `js/arrange.js` | Arrange mode: long-press, drag-and-drop and keyboard reordering of shortcuts and the bottom bar |
+| `js/device-setup.js` | First-run dialog asking for the TV's IP address |
 | `js/settings.js` | Settings (localStorage, cookie migration) |
 | `js/settings-panel.js` | Settings screen: draft/save/cancel, shortcut slots, app picker |
 | `js/apps.js`, `js/app-icons.js` | App/HDMI catalog, icon choices, icon rendering |
@@ -254,7 +281,7 @@ Hardware-dependent behaviour is listed in [docs/manual-testing.md](docs/manual-t
 * Power button will only work to power off. Powering On by HTML isn't supported. On my hardware (Mi Laser Projector), wake on lan doesn't work either. For now, I haven't been able to find out how official Mi Remote app wakes the device up (it might be using mDNS, but it's not discovered by standard Bonjour apps). Please contact me if you know how it works.
 * The HTTPS site needs a browser with Local Network Access support (Chrome/Edge 142+). Firefox, Safari and all iOS browsers block it as mixed content; use the [HTTP version](#http-version-iphone-safari-firefox) there.
 * The TV's replies can't be read (no CORS headers), so success of individual commands can't be confirmed.
-* Typing: which characters GiTV accepts in `keycode` beyond plain ASCII letters, digits and punctuation (space, symbols, accented letters) has not been verified on all firmwares. Already-sent text can't be corrected (no verified delete key).
+* Typing: many devices ignore plain characters in `keycode` (only the named keys work). Try the Android key formats (see [Typing text on the TV](#typing-text-on-the-tv)); which one works, and whether Shift gives capitals, depends on the firmware and hasn't been verified on real devices. Without an Android key format, already-sent text can't be corrected.
 * IPv6 device addresses aren't supported.
 
 ### Key tester (hidden)

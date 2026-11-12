@@ -8,8 +8,12 @@
 
 import { controllerUrl, keyEventParams } from "./commands.js";
 
-// Guesses worth trying; none of these are documented for GiTV.
+// Guesses worth trying; none of these are documented for GiTV. The first ones
+// check which form of a letter the device accepts with a text box focused on
+// the TV: a raw character (what typing sends), an Android key name, or an
+// Android key code number (29 = A, 62 = space, 67 = delete).
 export const TESTER_SUGGESTIONS = Object.freeze([
+  "a", "A", "KEYCODE_A", "29", "KEYCODE_SPACE", "62",
   "wakeup", "sleep", "mute", "volumemute", "del", "delete", "backspace", "source", "input",
   "settings", "search", "info", "playpause", "play", "pause", "stop", "channelup", "channeldown",
   "KEYCODE_WAKEUP", "KEYCODE_DEL", "224", "67",
