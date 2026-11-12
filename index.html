@@ -2,258 +2,334 @@
 <html lang="en">
 <head>
   <!-- Xiaomi GiTV Remote Control by Spocky -->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <!-- Commands only ever go to the TV's API on port 6095; no other network
+       destination is allowed, so typed text can't be sent anywhere else. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src http://*:6095; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#333" />
+  <meta name="theme-color" content="#333333">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="manifest" href="site.webmanifest">
   <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
   <meta name="msapplication-TileColor" content="#da532c">
-  <meta name="theme-color" content="#333333">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <style>
-    :root {
-      --main-color: #fff;
-      --main-bg-color: #333;
-      --main-bg-sec-color: rgba(0,0,0,0.3);
-      --font-size:10vmin;
-      --font-size-neg:-5vmin;
-      --footer-size:10vmax;
-      --remote-size:60vmin;
-    }
-    html, body{height:100%;}
-    body {background:var(--main-bg-color);color:var(--main-color);font-weight:bold;margin:0;padding:0;display:flex;flex-direction: column;align-items:center;justify-content: space-between;}
-    ul{display:flex;flex-wrap:wrap;padding-left:0;margin:0}
-    ul li{list-style: none;flex: 0 0 33.3333%;overflow:hidden;font-size:var(--font-size);display:flex;align-items:center;justify-content:center;}
-    footer {background:var(--main-bg-sec-color);width:100%;}
-    footer ul{height:var(--footer-size);}
-    .main a{color:var(--main-color);text-decoration:none;font-size:var(--font-size);}
-    .shadow{box-shadow: 0px 0px 20px 0px #000;}
-    .bg2{background:var(--main-bg-sec-color);border-radius:50%;}
-    .remote{width:var(--remote-size);height:var(--remote-size);border-radius: 50%;position: relative;flex-shrink: 0;box-sizing:border-box;}
-    .remote a {position:absolute;}
-    a.up{top: 0;left: 50%; margin-left: var(--font-size-neg);}
-    a.down{bottom: 0;left: 50%; margin-left: var(--font-size-neg);}
-    a.left{top: 50%;left: 0; margin-top: var(--font-size-neg);}
-    a.right{top: 50%;right: 0; margin-top: var(--font-size-neg);}
-    a.enter{border-radius: 50%;background:var(--main-color);top:50%;left:50%;width:30%;height:30%;margin-top: -15%;margin-left: -15%;}
-    .more{position:absolute;top:3vw;right:3vw;}
-    .power{position:absolute;top:3vw;left:3vw;}
-    #settings{display:flex;height:100%;width:100%;position:fixed;overflow:hidden;background:#000;opacity:.9;z-index:1;padding:1rem;font-family:monospace;justify-content:center;flex-direction:column;justify-content: space-evenly;box-sizing:border-box;transition:transform 300ms ease;will-change:transform;transform:translateX(100%);}
-    #settings input[type="text"]{display:block;width:90%}
-    #settings h3{margin:0;text-align:center;}
-    #deviceIP::placeholder{color:#f00;}
-    .wrapper{display:flex;flex-direction:column;flex: 1 0 auto;justify-content:space-around;}
-    .validate{display:flex;justify-content:space-around;margin-top:1rem;}
-    #enableVibrator {vertical-align:middle;}
-    small{margin-top:1rem;font-style:italic;}
-    .sig{display:block;margin-top: .5rem;text-align: right;}
-    .sig a{font-size:inherit;text-decoration: underline}
-    .buttons{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:space-around;}
-    .buttons ul{padding:.5rem;border-radius:2rem;justify-content:space-around;height:25vmax;width:10vmin;display:flex;flex-direction:column;}
-    .cust li {display:none;}
-    #destFrame{display:none;}
-    @media screen and (orientation:landscape) {
-      .buttons ul.vol{width:30%;height:auto;flex-direction:row-reverse;}
-      .buttons li {height: auto;}
-      .cust{margin-top:-30%;height:30vmax}
-      .wrapper{flex-direction:row;flex: 0 0 30%;flex-wrap: wrap;justify-content:flex-start}
-    }
-  </style>
-  <script>
-    var params = { 
-     "deviceIP" : "",
-     "enableVibrator" : true, 
-     "customPackage1": "com.google.android.youtube.tv",  
-     "customPackage2": "",
-     "customPackage3": "com.spocky.projengmenu",
-     "customPackage4": "",
-     "customLauncher": "",
-     "bgColor": "#333",
-     "btColor": "#fff"
-    };
-    function setCookie(cname, cvalue, exdays) {
-      var d = new Date();
-      d.setTime(d.getTime() + (exdays*24*60*60*1000));
-      var expires = "expires="+ d.toUTCString();
-      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
-    function getCookie(cname) {
-      var name = cname + "=";
-      var decodedCookie = decodeURIComponent(document.cookie);
-      var ca = decodedCookie.split(';');
-      for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          c = c.substring(name.length, c.length);
-          switch(c.toLowerCase()){
-            case "true":
-              return true;
-            case "false":
-              return false;
-            default:
-              return c;
-          }
-        }
-      }
-      return null;
-    }
-    function sendEvent(eventName){
-      execCommand('keyevent&keycode='+eventName);
-    }
-    function launchApp(customButton){
-      var app = params["customPackage" + customButton];
-      if(app=="") {
-        return;
-      }
-        switch(app.toLowerCase()){
-          case "hdmi1":
-          case "hdmi2":
-          case "hdmi3": // hdmi3 doesn't work at least on 1.3.97 and before
-            execCommand('changesource&source='+app.toLowerCase());
-          break;
-          default:
-            execCommand('startapp&type=packagename&packagename='+app);
-          break;
-        }
-    }
-    function execCommand(action){
-      if(params["deviceIP"]==""){
-        toggleSettings();
-        return;
-      }
-      if(params["enableVibrator"] && window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-      var destFrame = document.getElementById("destFrame");
-      destFrame.src='http://'+params["deviceIP"]+':6095/controller?action='+action;
-    }
-    function toggleSettings(){
-      var tmp;
-      var settings = document.getElementById("settings");
+  <meta name="msapplication-config" content="browserconfig.xml">
+  <script src="js/theme-boot.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+  <title>Xiaomi GiTV Remote Control</title>
+</head>
+<body class="main">
+  <!-- Material Icons (Apache License 2.0), inlined so no third-party font is loaded. -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true">
+    <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M14 7l-5 5 5 5V7z"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"/></symbol>
+    <symbol id="i-adjust" viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3-8c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z"/></symbol>
+    <symbol id="i-vol-up" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></symbol>
+    <symbol id="i-vol-down" viewBox="0 0 24 24"><path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.59 12 19 15.59z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></symbol>
+    <symbol id="i-apps" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></symbol>
+    <symbol id="i-movie" viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></symbol>
+    <symbol id="i-live" viewBox="0 0 24 24"><path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .89-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.11-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></symbol>
+    <symbol id="i-web" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol>
+    <symbol id="i-tune" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></symbol>
+    <symbol id="i-add" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+    <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></symbol>
+  </svg>
 
-      for(var key in params){
-        if(typeof params[key] === "boolean") {
-          document.getElementById(key).checked = params[key];
-        } else {
-          document.getElementById(key).value = params[key];
-        }
-      }
-      settings.style.transform=(settings.style.transform=="translateX(0%)"?"translateX(100%)":"translateX(0%)");
-    }
-    function saveSettings(){
-      for(var key in params){
-        if(typeof params[key] === "boolean") {
-          params[key] = document.getElementById(key).checked;
-        } else {
-          params[key] = document.getElementById(key).value;
-        }
-        setCookie(key,params[key],3650);
-      }
-	  updateUI();
-      toggleSettings();
-    }
-    function loadSettings(){
-      var tmp;
-      for(var key in params){
-        tmp = getCookie(key);
-        if(tmp!=null) params[key]=tmp;
-      }
-    }
-	function home(){
-	  var app = params["customLauncher"];
-      if(app=="") {
-        return sendEvent('home');
-      }
-	  execCommand('startapp&type=packagename&packagename='+app);
-	}
-    function updateUI(){
-      var tmp;
-      for(var i=1; i<5; i++){
-        tmp = document.getElementById("customButton"+i);
-        tmp.parentNode.style.display=(params["customPackage"+i]!=="")?"flex":"none";
-      }
-      root = document.documentElement;
-      root.style.setProperty('--main-color', params["btColor"]);
-      root.style.setProperty('--main-bg-color', params["bgColor"]);
-    }
-	function checkHash(){
-      ip = window.location.hash;
-      if(ip && ip.length>1){
-		setCookie("deviceIP",ip.substring(1),3650);
-	    window.location.hash='';
-      }
-	}
-    function init(){
-	  checkHash();
-      loadSettings();
-      updateUI();
-    }
-    document.onreadystatechange = function(e) { if (document.readyState === 'interactive') init(); };
-  </script>
-  <title>Xiaomi GITV Remote Control</title>
-  <body class="main">
-    <div>
-      <a href="javascript:toggleSettings();" class="material-icons more">more_vert</a>
-      <a href="javascript:sendEvent('power');" class="material-icons power">power_settings_new</a>
+  <header class="topbar">
+    <button type="button" class="icon-btn power" data-key="power" aria-label="Power off">
+      <svg class="icon"><use href="#i-power"/></svg>
+    </button>
+    <p id="statusPill" class="status-pill" role="status" aria-live="polite" hidden></p>
+    <div class="topbar-end">
+      <button type="button" id="keyboardButton" class="icon-btn" aria-label="Type text on the TV" aria-haspopup="dialog" aria-controls="keyboardPanel" aria-expanded="false">
+        <svg class="icon"><use href="#i-keyboard"/></svg>
+        <span id="keyboardBadge" class="badge" hidden></span>
+      </button>
+      <button type="button" id="settingsButton" class="icon-btn" aria-label="Settings" aria-haspopup="dialog" aria-controls="settings" aria-expanded="false">
+        <svg class="icon"><use href="#i-more"/></svg>
+      </button>
     </div>
-    <div class="remote bg2 shadow">
-      <a class="material-icons up" href="javascript:sendEvent('up');">arrow_drop_up</a>
-      <a class="material-icons left" href="javascript:sendEvent('left');">arrow_left</a>
-      <a class="material-icons right" href="javascript:sendEvent('right');">arrow_right</a>
-      <a class="material-icons down" href="javascript:sendEvent('down');">arrow_drop_down</a>
-      <a class="enter" href="javascript:sendEvent('enter');"></a>
+  </header>
+
+  <!-- Arrange mode (long-press a shortcut or bottom-bar button) -->
+  <div id="arrangeBar" class="arrange-bar" role="toolbar" aria-label="Arrange buttons" hidden>
+    <p class="arrange-hint">Drag shortcuts and bottom-bar buttons to rearrange</p>
+    <button type="button" id="arrangeCancel" class="text-btn">Cancel</button>
+    <button type="button" id="arrangeDone" class="primary-btn">Done</button>
+  </div>
+  <p id="arrangeStatus" class="visually-hidden" aria-live="polite"></p>
+
+  <main class="remote-area">
+    <div class="remote" role="group" aria-label="Navigation">
+      <button type="button" class="dpad up" data-key="up" aria-label="Up"><svg class="icon"><use href="#i-up"/></svg></button>
+      <button type="button" class="dpad left" data-key="left" aria-label="Left"><svg class="icon"><use href="#i-left"/></svg></button>
+      <button type="button" class="dpad right" data-key="right" aria-label="Right"><svg class="icon"><use href="#i-right"/></svg></button>
+      <button type="button" class="dpad down" data-key="down" aria-label="Down"><svg class="icon"><use href="#i-down"/></svg></button>
+      <button type="button" class="enter" data-key="enter" aria-label="OK"><span class="ok-label" aria-hidden="true">OK</span></button>
     </div>
     <div class="buttons">
       <ul class="cust">
-        <li><a class="material-icons" id="customButton1" href="javascript:launchApp(1);">adjust</a></li>
-        <li><a class="material-icons" id="customButton2" href="javascript:launchApp(2);">adjust</a></li>
+        <li><button type="button" class="icon-btn tile" id="customButton1" data-app="1" data-arrange="slot" aria-label="Shortcut 1"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton2" data-app="2" data-arrange="slot" aria-label="Shortcut 2"></button></li>
       </ul>
-      <ul class="vol bg2 shadow">
-        <li><a class="material-icons" href="javascript:sendEvent('volumeup');">volume_up</a></li>
-        <li><a class="material-icons" href="javascript:sendEvent('volumedown');">volume_down</a></li>
+      <ul class="vol">
+        <li><button type="button" class="icon-btn tile" data-key="volumeup" aria-label="Volume up"><svg class="icon"><use href="#i-vol-up"/></svg></button></li>
+        <li><button type="button" class="icon-btn tile" data-key="volumedown" aria-label="Volume down"><svg class="icon"><use href="#i-vol-down"/></svg></button></li>
       </ul>
       <ul class="cust">
-        <li><a class="material-icons" id="customButton3" href="javascript:launchApp(3);">adjust</a></li>
-        <li><a class="material-icons" id="customButton4" href="javascript:launchApp(4);">adjust</a></li>
+        <li><button type="button" class="icon-btn tile" id="customButton3" data-app="3" data-arrange="slot" aria-label="Shortcut 3"></button></li>
+        <li><button type="button" class="icon-btn tile" id="customButton4" data-app="4" data-arrange="slot" aria-label="Shortcut 4"></button></li>
       </ul>
     </div>
-    <footer class="shadow">
-      <ul>
-        <li class="home"><a class="material-icons" href="javascript:home();">home</a></li>
-        <li class="back"><a class="material-icons" href="javascript:sendEvent('back');">arrow_back</a></li>
-        <li class="menu"><a class="material-icons" href="javascript:sendEvent('menu');">menu</a></li>
-      </ul>
-    </footer>
-    <div id="settings">
-      <h3>MiReCo Settings</h3>
-      <div class="wrapper">
-        <label for="deviceIP">Device IP Address<input type="text" id="deviceIP" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" value="" placeholder="xxx.xxx.xxx.xxx" /></label>
-        <label for="customPackage1">Custom button #1<input type="text" id="customPackage1" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage2">Custom button #2<input type="text" id="customPackage2" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage3">Custom button #3<input type="text" id="customPackage3" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customPackage4">Custom button #4<input type="text" id="customPackage4" value="" placeholder="com.example.packagename / HDMI1 / HDMI2" /></label>
-        <label for="customLauncher">Home button custom launcher<input type="text" id="customLauncher" value="" placeholder="com.example.packagename" /></label>
-        <label for="bgColor">Background color<input type="text" class="jscolor {hash:true}" id="bgColor" value="" placeholder="#333" /></label>
-        <label for="btColor">Buttons color<input type="text" class="jscolor {hash:true}" id="btColor" value="" placeholder="#fff" /></label>
-        <label for="enableVibrator"><input id="enableVibrator" type="checkbox" name="checkbox" value="1">Vibrate on touch</label>
+  </main>
+
+  <footer>
+    <ul>
+      <li class="home"><button type="button" class="icon-btn" data-action="home" data-arrange="dock" data-dock="home" aria-label="Home"><svg class="icon"><use href="#i-home"/></svg></button></li>
+      <li class="back"><button type="button" class="icon-btn" data-key="back" data-arrange="dock" data-dock="back" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></button></li>
+      <li class="menu"><button type="button" class="icon-btn" data-key="menu" data-arrange="dock" data-dock="menu" aria-label="Menu"><svg class="icon"><use href="#i-menu"/></svg></button></li>
+    </ul>
+  </footer>
+
+  <!-- First-run setup: shown only when no usable TV address is stored. -->
+  <div id="deviceSetup" class="setup" role="dialog" aria-modal="true" aria-labelledby="setupTitle" aria-describedby="setupHint" hidden>
+    <div class="setup-card">
+      <h2 id="setupTitle">Connect to your Xiaomi box</h2>
+      <p id="setupHint" class="setup-hint">Enter the TV's IP address. You'll find it on the TV under Settings → Network.</p>
+      <label for="setupIP" class="field-label">TV IP address</label>
+      <input type="text" id="setupIP" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="192.168.1.20" aria-describedby="setupIPError">
+      <p id="setupIPError" class="field-error" hidden></p>
+      <div class="setup-actions">
+        <button type="button" id="setupLater" class="text-btn">Set up later</button>
+        <button type="button" id="setupOK" class="primary-btn" disabled>OK</button>
       </div>
-      <div class="validate">
-        <a href="javascript:toggleSettings();" class="material-icons">cancel</a>
-        <a href="javascript:saveSettings();" class="material-icons">check</a>
+    </div>
+  </div>
+
+  <!-- Text entry bottom sheet. Non-modal: the remote above stays usable. -->
+  <section id="keyboardPanel" class="sheet" role="dialog" aria-labelledby="keyboardTitle" hidden>
+    <div class="sheet-head">
+      <div class="sheet-title">
+        <h2 id="keyboardTitle">Type on TV</h2>
+        <span class="sheet-warning">Doesn't work on all devices!</span>
       </div>
-      <small>Don't forget to go to your browser settings to add this webapp's shortcut to your launcher (and automatically remove address bar)
-      <span class="sig"><a href="https://github.com/spocky/mireco/">MiReCo</a>, from Spocky with love <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MH5HLMP8ED24N&lc=GB&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">(buy me a drink)</a></span>
+      <div class="segmented" role="radiogroup" aria-label="Transmission mode">
+        <label><input type="radio" name="textMode" value="auto" checked><span>Auto words</span></label>
+        <label><input type="radio" name="textMode" value="compose"><span>Compose &amp; Send</span></label>
+        <label id="testerModeOption" hidden><input type="radio" name="textMode" value="tester"><span>Key tester</span></label>
+      </div>
+      <button type="button" id="keyboardClose" class="icon-btn small" aria-label="Close keyboard">
+        <svg class="icon"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <p id="modeHint" class="hint"></p>
+    <textarea id="textEntry" rows="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" aria-label="Text to send" aria-describedby="modeHint textStatus" placeholder="Type here…"></textarea>
+    <!-- Hidden diagnostic: unlocked by tapping the "Type on TV" title 8 times. -->
+    <div id="keyTester" class="key-tester">
+      <div class="tester-row">
+        <input type="text" id="testerKey" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" placeholder="Key name, e.g. wakeup" aria-label="Key name to send" aria-describedby="modeHint">
+        <button type="button" id="testerSend" class="primary-btn"><svg class="icon"><use href="#i-send"/></svg>Send key</button>
+      </div>
+      <div id="testerChips" class="tester-chips" role="group" aria-label="Keys to try"></div>
+      <ol id="testerLog" class="tester-log" aria-live="polite" aria-label="Sent keys"></ol>
+    </div>
+    <div id="recovery" class="recovery" role="alert" hidden>
+      <p id="recoveryText"></p>
+      <div class="row">
+        <button type="button" id="recoveryRestore" class="text-btn">Put back in draft</button>
+        <button type="button" id="recoveryDiscard" class="text-btn">Discard</button>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <p id="textStatus" class="text-status" data-state="idle" aria-live="polite">Ready</p>
+      <button type="button" id="textStop" class="text-btn" hidden><svg class="icon"><use href="#i-stop"/></svg>Stop</button>
+      <button type="button" id="textDelete" class="text-btn" aria-label="Delete the last character on the TV" hidden><svg class="icon"><use href="#i-clear"/></svg>Delete</button>
+      <button type="button" id="textClear" class="text-btn" aria-label="Clear draft"><svg class="icon"><use href="#i-delete"/></svg>Clear</button>
+      <button type="button" id="textSend" class="primary-btn"><svg class="icon"><use href="#i-send"/></svg>Send</button>
+    </div>
+  </section>
+
+  <div id="settings" class="settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1" inert>
+    <header class="settings-bar">
+      <button type="button" id="settingsClose" class="icon-btn small" aria-label="Close without saving"><svg class="icon"><use href="#i-close"/></svg></button>
+      <h2 id="settingsTitle">Settings</h2>
+      <span id="settingsDirty" class="dirty-chip" hidden>Unsaved</span>
+    </header>
+    <div class="settings-scroll">
+      <section class="card" aria-labelledby="secTv">
+        <div class="card-head">
+          <span class="card-icon"><svg class="icon"><use href="#i-wifi"/></svg></span>
+          <div><h3 id="secTv">TV connection</h3><p>Find the IP address on the TV under Settings → Network.</p></div>
+        </div>
+        <label for="deviceIP" class="field-label">TV IP address</label>
+        <div class="ip-row">
+          <input type="text" id="deviceIP" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="192.168.1.x" aria-describedby="deviceIPError connectionResult">
+          <button type="button" id="testConnection" class="text-btn">Test</button>
+        </div>
+        <p id="deviceIPError" class="field-error" hidden></p>
+        <p id="connectionResult" class="connection-result" role="status" aria-live="polite"></p>
+        <details class="connection-info">
+          <summary>How this page reaches your TV</summary>
+          <p id="pageContext"></p>
+          <p id="permissionInfo"></p>
+        </details>
+      </section>
+
+      <aside id="installBanner" class="install-banner" aria-labelledby="installTitle">
+        <span class="install-banner-icon" aria-hidden="true"><svg class="icon"><use href="#i-home"/></svg></span>
+        <div class="install-banner-content">
+          <h3 id="installTitle">Keep your remote one tap away</h3>
+          <p id="installHint">Add this page to your home screen from the browser menu to use it like an app.</p>
+        </div>
+        <button type="button" id="installButton" class="primary-btn" hidden>Install MiReCo</button>
+      </aside>
+
+      <section class="card" aria-labelledby="secButtons">
+        <div class="card-head">
+          <span class="card-icon"><svg class="icon"><use href="#i-apps"/></svg></span>
+          <div><h3 id="secButtons">Shortcut buttons</h3><p>Tap a button to pick an app or HDMI input. They sit beside the volume keys, in the same places.</p></div>
+        </div>
+        <div class="slot-grid">
+          <button type="button" class="slot" data-slot="1"><span class="tile slot-tile"></span><span class="slot-text"><span class="slot-name"></span><span class="slot-sub"></span></span></button>
+          <button type="button" class="slot" data-slot="2"><span class="tile slot-tile"></span><span class="slot-text"><span class="slot-name"></span><span class="slot-sub"></span></span></button>
+          <button type="button" class="slot" data-slot="3"><span class="tile slot-tile"></span><span class="slot-text"><span class="slot-name"></span><span class="slot-sub"></span></span></button>
+          <button type="button" class="slot" data-slot="4"><span class="tile slot-tile"></span><span class="slot-text"><span class="slot-name"></span><span class="slot-sub"></span></span></button>
+        </div>
+        <button type="button" class="row-btn" id="homeRow" data-slot="home">
+          <span class="tile slot-tile"><svg class="icon"><use href="#i-home"/></svg></span>
+          <span class="slot-text"><span class="slot-name">Home button</span><span class="slot-sub" id="homeRowValue"></span></span>
+          <svg class="icon chevron"><use href="#i-chevron"/></svg>
+        </button>
+        <button type="button" class="text-btn arrange-btn" id="arrangeFromSettings">Arrange on the remote</button>
+        <p class="field-hint" id="arrangeHint">Or long-press a shortcut or bottom-bar button on the remote, then drag.</p>
+      </section>
+
+      <section class="card" aria-labelledby="secLook">
+        <div class="card-head">
+          <span class="card-icon"><svg class="icon"><use href="#i-palette"/></svg></span>
+          <div><h3 id="secLook">Appearance</h3><p>Tap a theme to preview it.</p></div>
+        </div>
+        <div class="theme-picker" role="radiogroup" aria-label="Theme">
+          <label class="theme-card" data-theme-preview="ember"><input type="radio" name="theme" value="ember"><span class="theme-swatch" aria-hidden="true"><i></i></span><span class="theme-name">Ember</span><span class="theme-desc">Xiaomi orange on graphite, HyperOS-style keys</span></label>
+          <label class="theme-card" data-theme-preview="leanback"><input type="radio" name="theme" value="leanback"><span class="theme-swatch" aria-hidden="true"><i></i></span><span class="theme-name">Leanback</span><span class="theme-desc">Android TV / Google TV dark Material</span></label>
+          <label class="theme-card" data-theme-preview="frost"><input type="radio" name="theme" value="frost"><span class="theme-swatch" aria-hidden="true"><i></i></span><span class="theme-name">Frost</span><span class="theme-desc">Light frosted glass, like a white Mi remote</span></label>
+          <label class="theme-card" data-theme-preview="classic"><input type="radio" name="theme" value="classic"><span class="theme-swatch" aria-hidden="true"><i></i></span><span class="theme-name">Classic</span><span class="theme-desc">Original MiReCo look with your colors</span></label>
+        </div>
+        <div id="customColors" class="two-col">
+          <label for="bgColor" class="field-label">Background<input type="text" class="color-input" id="bgColor" autocomplete="off" spellcheck="false" placeholder="#333"></label>
+          <label for="btColor" class="field-label">Buttons<input type="text" class="color-input" id="btColor" autocomplete="off" spellcheck="false" placeholder="#fff"></label>
+        </div>
+        <p id="customColorsHint" class="field-hint">Choose Classic to use your own background and button colors.</p>
+        <label class="switch-row" for="enableVibrator">
+          <span><span class="switch-title">Vibrate on touch</span><span class="field-hint">Short buzz when you press a remote button (Android only).</span></span>
+          <input id="enableVibrator" type="checkbox" class="switch" role="switch">
+        </label>
+      </section>
+
+      <section class="card" aria-labelledby="secTyping">
+        <div class="card-head">
+          <span class="card-icon"><svg class="icon"><use href="#i-keyboard"/></svg></span>
+          <div><h3 id="secTyping">Typing</h3><p>How text from the keyboard panel is sent.</p></div>
+        </div>
+        <label for="keyIntervalMs" class="field-label slider-label">Delay between keys <output id="keyIntervalValue" for="keyIntervalMs"></output></label>
+        <input type="range" id="keyIntervalMs" min="0" max="1000" step="10" aria-describedby="keyIntervalHint">
+        <p id="keyIntervalHint" class="field-hint">Raise it if the TV drops letters. 80 ms works for most devices.</p>
+        <label for="textKeyFormat" class="field-label">Letters are sent as</label>
+        <select id="textKeyFormat" aria-describedby="textKeyFormatHint">
+          <option value="char">Characters (a, b, c) · original GiTV</option>
+          <option value="name">Android key names (KEYCODE_A)</option>
+          <option value="number">Android key numbers (29)</option>
+        </select>
+        <p id="textKeyFormatHint" class="field-hint">If typed letters don't appear on your TV, try another format. Find the one that works with the hidden key tester (tap "Type on TV" 8 times). The Android formats add a delete key; capitals need the TV to honour Shift.</p>
+        <label class="switch-row" for="allowNonAscii">
+          <span><span class="switch-title">Accented characters</span><span class="field-hint">Send á, ñ, ü… (Characters format only). Experimental: untested on GiTV.</span></span>
+          <input id="allowNonAscii" type="checkbox" class="switch" role="switch">
+        </label>
+      </section>
+
+      <small>
+        <span class="sig"><em><a href="https://github.com/bmpenuelas/mireco/" target="_blank" rel="noopener">MiReCo&nbsp;fork</a>, <a href="https://github.com/spocky/mireco/" target="_blank" rel="noopener">original</a> by Spocky <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=MH5HLMP8ED24N&amp;lc=GB&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted" target="_blank" rel="noopener">(buy him a drink)</a></em></span>
       </small>
     </div>
-    <iframe id="destFrame" src="//goo.gl/86jmF9"></iframe>
-  </body>
+    <footer class="settings-actions">
+      <button type="button" id="settingsCancel" class="text-btn">Cancel</button>
+      <button type="button" id="settingsSave" class="primary-btn">Done</button>
+    </footer>
+
+    <!-- App picker for a shortcut button or the home button -->
+    <div id="appPicker" class="picker" hidden>
+      <div class="picker-card" role="dialog" aria-modal="true" aria-labelledby="pickerTitle" tabindex="-1">
+        <header class="picker-bar">
+          <h3 id="pickerTitle">Button</h3>
+          <button type="button" id="pickerClose" class="icon-btn small" aria-label="Close"><svg class="icon"><use href="#i-close"/></svg></button>
+        </header>
+        <div class="picker-search">
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" id="pickerSearch" placeholder="Search apps" autocomplete="off" spellcheck="false" aria-label="Search apps">
+        </div>
+        <div class="picker-scroll">
+          <div id="pickerHomeSection" hidden>
+            <div class="app-grid" id="pickerHome"></div>
+          </div>
+          <h4 id="pickerAppsTitle">Popular apps</h4>
+          <div class="app-grid" id="pickerApps"></div>
+          <p id="pickerNoResults" class="field-hint" hidden>No matching apps. Enter the package name below.</p>
+          <div id="pickerInputsSection">
+            <h4>TV inputs</h4>
+            <div class="app-grid" id="pickerInputs"></div>
+            <p class="field-hint">HDMI 3 doesn't work on some GiTV versions.</p>
+          </div>
+          <h4>Other app</h4>
+          <div class="custom-app">
+            <label for="pickerPackage" class="field-label">Package name</label>
+            <input type="text" id="pickerPackage" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="com.example.app" aria-describedby="pickerPackageHint">
+            <p id="pickerPackageHint" class="field-hint">Find it in the app's Play Store address (id=…) or in the TV's app info.</p>
+            <div id="pickerIconSection">
+              <p class="field-label">Icon</p>
+              <div class="glyph-row" id="pickerGlyphs" role="radiogroup" aria-label="Icon"></div>
+              <div id="pickerTextRow" class="text-icon-row" hidden>
+                <label for="pickerText" class="field-label">Letters (up to 3)</label>
+                <input type="text" id="pickerText" maxlength="8" autocomplete="off" spellcheck="false" placeholder="TV">
+              </div>
+            </div>
+            <div class="custom-preview">
+              <span id="pickerPreview" class="tile slot-tile" aria-hidden="true"></span>
+              <span id="pickerPreviewName" class="slot-text"></span>
+              <button type="button" id="pickerUseCustom" class="primary-btn">Use</button>
+            </div>
+          </div>
+        </div>
+        <footer class="picker-foot" id="pickerFoot">
+          <button type="button" id="pickerRemove" class="text-btn danger"><svg class="icon"><use href="#i-delete"/></svg><span id="pickerRemoveLabel">Remove button</span></button>
+        </footer>
+      </div>
+    </div>
+  </div>
   <script src="jscolor.js"></script>
-  </html>
+</body>
+</html>

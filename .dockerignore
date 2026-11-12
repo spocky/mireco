@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+certs
+*.pem
+*.key
+docs
+tests
+.claude

@@ -1,0 +1,359 @@
+// MiReCo UI controller: remote buttons, settings, status and wiring of the
+// transport, command queue and keyboard panel.
+
+import { parseDeviceAddress } from "./address.js";
+import { renderIcon } from "./app-icons.js";
+import { createArrangeMode, parseDockOrder } from "./arrange.js";
+import { describeButton } from "./apps.js";
+import { controllerUrl, customButtonParams, homeParams, keyEventParams, probeUrl } from "./commands.js";
+import { CommandQueue } from "./command-queue.js";
+import { createDeviceSetup, IP_PREFIX } from "./device-setup.js";
+import { createKeyboardPanel } from "./keyboard-panel.js";
+import { createInstallBanner } from "./install-banner.js";
+import { createSettingsPanel } from "./settings-panel.js";
+import { createSettingsStore } from "./settings.js";
+import { applyTheme } from "./themes.js";
+import {
+  createFetchTransport,
+  describePageContext,
+  explainFailure,
+  localNetworkAccessApplies,
+  queryLocalNetworkPermission,
+} from "./transport.js";
+
+const $ = (id) => document.getElementById(id);
+
+createInstallBanner({
+  banner: $("installBanner"),
+  button: $("installButton"),
+  hint: $("installHint"),
+});
+
+const settings = createSettingsStore();
+settings.load();
+applyHashDeviceIP();
+
+let device = parseDeviceAddress(settings.get("deviceIP"));
+const pageContext = describePageContext(location);
+const transport = createFetchTransport();
+const queue = new CommandQueue({
+  send: (command) => transport.send(command.url, { addressSpace: command.addressSpace }),
+  intervalMs: settings.get("keyIntervalMs"),
+});
+
+// ---------- Local Network Access permission ----------
+
+let permission = { state: "unsupported", status: null };
+
+async function refreshPermission(addressSpace = device.ok ? device.addressSpace : "local") {
+  const result = await queryLocalNetworkPermission(addressSpace);
+  if (permission.status && permission.status !== result.status) permission.status.onchange = null;
+  permission = result;
+  if (result.status) {
+    result.status.onchange = () => {
+      permission.state = result.status.state;
+      renderConnectionInfo();
+    };
+  }
+  renderConnectionInfo();
+  return permission.state;
+}
+
+async function explainError(error) {
+  const permissionState = await refreshPermission();
+  return explainFailure({
+    error,
+    pageKind: pageContext.kind,
+    permissionState,
+    host: device.ok ? device.host : "the TV",
+    addressSpace: device.ok ? device.addressSpace : "local",
+  });
+}
+
+// ---------- Status pill (deduplicated) ----------
+
+const statusPill = $("statusPill");
+let statusTimer = null;
+
+function showStatus(message, tone = "info", ms = 6000) {
+  statusPill.textContent = message;
+  statusPill.dataset.tone = tone;
+  statusPill.hidden = false;
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(hideStatus, ms);
+}
+
+function hideStatus() {
+  statusPill.hidden = true;
+  statusPill.textContent = "";
+}
+
+// ---------- Remote buttons ----------
+
+function vibrate(ms = 50) {
+  if (!settings.get("enableVibrator")) return;
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    // not supported (iOS)
+  }
+}
+
+function sendRemote(params, label) {
+  if (!device.ok) {
+    settingsPanel.open({ error: device.error });
+    return;
+  }
+  vibrate();
+  const accepted = queue.enqueue({
+    kind: "remote",
+    url: controllerUrl(device.host, params),
+    addressSpace: device.addressSpace,
+    label,
+  });
+  if (!accepted) showStatus("Too many commands waiting. Wait a moment or stop the text being sent.", "warn");
+}
+
+let lastRemoteError = "";
+queue.subscribe((event) => {
+  if (event.type === "failed" && event.command.kind === "remote") {
+    explainError(event.error).then((message) => {
+      // Same error again: just keep it visible instead of re-announcing it.
+      if (message === lastRemoteError && !statusPill.hidden) {
+        clearTimeout(statusTimer);
+        statusTimer = setTimeout(hideStatus, 10000);
+        return;
+      }
+      lastRemoteError = message;
+      showStatus(message, "error", 10000);
+    });
+  } else if (event.type === "sent" && lastRemoteError) {
+    // A later request got an HTTP response, so the earlier error is stale.
+    lastRemoteError = "";
+    if (statusPill.dataset.tone === "error") hideStatus();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  const button = e.target.closest("button[data-key], button[data-app], button[data-action]");
+  if (!button || button.closest("#settings")) return;
+  // Arranging (or a long-press that just started it) never sends commands.
+  if (arrange.shouldSuppressClick()) {
+    e.preventDefault();
+    return;
+  }
+  if (button.dataset.key) {
+    sendRemote(keyEventParams(button.dataset.key), button.dataset.key);
+  } else if (button.dataset.app) {
+    const params = customButtonParams(settings.get("customPackage" + button.dataset.app));
+    if (params) sendRemote(params, "custom " + button.dataset.app);
+  } else if (button.dataset.action === "home") {
+    sendRemote(homeParams(settings.get("customLauncher")), "home");
+  }
+});
+
+// While typing, pressing a remote button shouldn't close the soft keyboard.
+document.addEventListener("pointerdown", (e) => {
+  const typing = document.activeElement === keyboard.field || document.activeElement === keyboard.tester.input;
+  if (typing && e.target.closest(".remote, .buttons, footer")) {
+    e.preventDefault();
+  }
+});
+
+// ---------- Keyboard panel ----------
+
+const keyboard = createKeyboardPanel({
+  doc: document,
+  queue,
+  getDevice: () => device,
+  settings,
+  explainError,
+  vibrate,
+  onOpen: () => settingsPanel.close(),
+  onNeedsDevice: (message) => showStatus(message + " Open Settings to set it.", "warn"),
+});
+
+window.addEventListener("beforeunload", (e) => {
+  if (keyboard.hasUnsentWork()) e.preventDefault();
+});
+
+// ---------- Settings ----------
+
+const settingsPanel = createSettingsPanel({
+  doc: document,
+  settings,
+  onOpen: () => {
+    keyboard.close({ restoreFocus: false });
+    refreshPermission();
+  },
+  onClose: () => updateUI(), // also drops an unsaved theme preview
+  onSave: saveSettings,
+  testConnection,
+  refreshConnectionInfo: renderConnectionInfo,
+  onArrange: () => arrange.enter(),
+});
+
+// ---------- Arrange mode (drag to reorder bottom bar and shortcuts) ----------
+
+const arrange = createArrangeMode({
+  doc: document,
+  settings,
+  renderRemote,
+  onEnter: () => {
+    keyboard.close({ restoreFocus: false });
+    settingsPanel.close();
+  },
+  onApply: (patch) => {
+    if (!settings.update(patch)) showStatus("This browser blocked storage; the new layout will be lost when the page closes.", "warn");
+  },
+  vibrate: (ms) => vibrate(ms),
+  describeSlot: (n, slot) => describeButton(slot.value, slot.icon)?.name ?? "empty",
+});
+
+// ---------- First-run setup (no usable TV address stored yet) ----------
+
+const deviceSetup = createDeviceSetup({
+  dialog: $("deviceSetup"),
+  input: $("setupIP"),
+  error: $("setupIPError"),
+  okButton: $("setupOK"),
+  laterButton: $("setupLater"),
+  initialValue: settings.get("deviceIP") || IP_PREFIX,
+  background: [".topbar", ".remote-area", "footer", "#keyboardPanel"].map((selector) => document.querySelector(selector)),
+  onSubmit: (parsed) => {
+    saveSettings({ deviceIP: parsed.host });
+    showStatus(`TV address set to ${parsed.host}. Press a button to try it.`, "info");
+  },
+});
+
+function saveSettings(patch) {
+  const previousHost = device.ok ? device.host : "";
+  const stored = settings.update(patch);
+  device = parseDeviceAddress(settings.get("deviceIP"));
+  queue.intervalMs = settings.get("keyIntervalMs");
+  if ((device.ok ? device.host : "") !== previousHost) {
+    // Commands queued for the old address must not go to the new one.
+    const cancelled = queue.cancelPending();
+    if (cancelled.length) {
+      keyboard.reportCancelled(cancelled, "The device address changed, so queued keys were cancelled.");
+      showStatus(`Device changed: ${cancelled.length} queued command(s) cancelled.`, "warn");
+    }
+  }
+  if (!stored) showStatus("This browser blocked storage; settings will be lost when the page closes.", "warn");
+  return stored;
+}
+
+async function testConnection(parsed) {
+  try {
+    await transport.send(probeUrl(parsed.host), { addressSpace: parsed.addressSpace });
+    refreshPermission(parsed.addressSpace);
+    return {
+      tone: "ok",
+      message: `Something answered at ${parsed.host}:6095, so the browser can reach it. The TV doesn't confirm individual commands, so check the screen when you press a button.`,
+    };
+  } catch (error) {
+    const permissionState = await refreshPermission(parsed.addressSpace);
+    return {
+      tone: "error",
+      message: explainFailure({ error, pageKind: pageContext.kind, permissionState, host: parsed.host, addressSpace: parsed.addressSpace }),
+    };
+  }
+}
+
+const UNSUPPORTED_HTTPS_HINT =
+  "This browser can't send commands to an http:// TV from an HTTPS page (no Local Network Access support: iPhone/iPad, Safari, Firefox, older Chrome). Use current Chrome or Edge, or open MiReCo's HTTP version hosted on your own network (see README → HTTP version).";
+
+function renderConnectionInfo() {
+  $("pageContext").textContent = pageContext.summary;
+  if (!localNetworkAccessApplies(pageContext.kind, device.ok ? device.addressSpace : "local")) {
+    $("permissionInfo").textContent = "The Local Network Access permission doesn't apply to requests from this page to the TV.";
+    return;
+  }
+  const https = pageContext.kind.startsWith("https");
+  const text = {
+    granted: "Local network access: allowed for this site.",
+    prompt: "Local network access: not decided yet. Press Test connection and choose Allow when the browser asks.",
+    denied: "Local network access: blocked for this site. Allow it in the browser's site settings, then reload.",
+    unsupported: https
+      ? UNSUPPORTED_HTTPS_HINT
+      : "This browser doesn't support Local Network Access permissions.",
+  }[permission.state] || "";
+  // Make the explanation visible right away where it matters most.
+  if (https && permission.state === "unsupported") $("pageContext").closest("details").open = true;
+  $("permissionInfo").textContent = text;
+}
+
+// ---------- Appearance ----------
+
+/** Shortcut buttons and bottom-bar order. While arranging, empty shortcut places show as placeholders. */
+function renderRemote(values, { arranging = false } = {}) {
+  for (let i = 1; i <= 4; i++) {
+    const info = describeButton(values["customPackage" + i], values["customIcon" + i]);
+    const button = $("customButton" + i);
+    button.parentNode.style.display = info || arranging ? "flex" : "none";
+    renderIcon(button, info?.icon ?? null);
+    button.classList.toggle("placeholder", !info);
+    button.setAttribute("aria-label", info ? info.action : `Empty shortcut ${i}`);
+  }
+  // Only touch the DOM when the order changed: moving an element drops its focus.
+  const dock = document.querySelector("footer ul");
+  const order = parseDockOrder(values.dockOrder);
+  const current = [...dock.children].map((li) => li.querySelector("[data-dock]").dataset.dock);
+  if (current.join() !== order.join()) {
+    for (const key of order) dock.append(dock.querySelector(`[data-dock="${key}"]`).parentNode);
+  }
+}
+
+function updateUI() {
+  renderRemote(settings.all(), { arranging: arrange.active });
+  const themeColor = applyTheme(document.documentElement, settings.get("theme"), {
+    bgColor: settings.get("bgColor"),
+    btColor: settings.get("btColor"),
+  });
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
+  keyboard.render();
+}
+
+// Support "index.html#192.168.1.20" links, as the original version did.
+function applyHashDeviceIP() {
+  if (location.hash.length < 2) return;
+  let hash = location.hash.slice(1);
+  try {
+    hash = decodeURIComponent(hash);
+  } catch {
+    // use it as is; parseDeviceAddress rejects anything invalid
+  }
+  const parsed = parseDeviceAddress(hash);
+  if (parsed.ok) settings.update({ deviceIP: parsed.host });
+  history.replaceState(null, "", location.pathname + location.search);
+}
+
+// Soft keyboard fallback for browsers that overlay it on the page instead of
+// resizing (interactive-widget=resizes-content handles Chrome on Android).
+if (window.visualViewport) {
+  const vv = window.visualViewport;
+  const update = () => {
+    const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty("--kb-offset", `${Math.round(offset)}px`);
+  };
+  vv.addEventListener("resize", update);
+  vv.addEventListener("scroll", update);
+}
+
+updateUI();
+renderConnectionInfo();
+refreshPermission().then((state) => {
+  // Tell iPhone/Safari/Firefox users up front instead of after a failed press (once per session).
+  if (pageContext.kind !== "https-public" || state !== "unsupported") return;
+  try {
+    if (sessionStorage.getItem("mireco.lnaHintShown")) return;
+    sessionStorage.setItem("mireco.lnaHintShown", "1");
+  } catch {
+    // storage blocked: show it anyway
+  }
+  showStatus("This browser can't reach your TV from the HTTPS site. Use Chrome or Edge, or the HTTP version (see Settings).", "warn", 15000);
+});
+if (pageContext.kind === "http-public") showStatus(pageContext.summary, "warn", 12000);
+
+// First use (or a stored address that no longer parses): ask for the TV's IP.
+if (!device.ok) deviceSetup.open();

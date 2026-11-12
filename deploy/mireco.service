@@ -1,0 +1,25 @@
+# systemd unit for the MiReCo HTTP version on Linux (e.g. a Raspberry Pi).
+#
+#   sudo git clone https://github.com/USER/mireco /opt/mireco
+#   cd /opt/mireco && sudo node scripts/build.mjs
+#   sudo cp deploy/mireco.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now mireco
+#
+# Adjust the paths, port or node location (`which node`) if yours differ.
+
+[Unit]
+Description=MiReCo web remote (HTTP version)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/node /opt/mireco/scripts/serve.mjs --root /opt/mireco/dist --host 0.0.0.0 --port 8080
+Restart=on-failure
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
